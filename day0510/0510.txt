@@ -1,0 +1,112 @@
+제어문 : 프로그램 수행중에 사용자의 상황에 따라 흐름을 제어하는 명령어(문장)을 말함
+
+- 선택문 : 상황에 다라 동작시켜야 할 명령어들을 선택 시키기 위한 문장
+	if
+	switch
+
+- 반복문 : 조건을 만족할 동안에 특정 명령어들을 계속하여 반복시키기 위한 문장을 말함
+	for
+	while
+	do~while
+
+- 기타 : 제어문에서 사용하는 키워드
+	break
+	continue
+
+----------------------------------------------------------------------------------------------------------
+		if (n==0){
+			System.out.println("영");
+		} else if (n == 1)	{
+			System.out.println("하나");
+		} else if (n == 2)	{
+			System.out.println("둘");
+		} else if (n == 3)	{
+			System.out.println("삼");
+		} else if (n == 4)	{
+			System.out.println("넷");
+		} else if (n == 5)	{
+			System.out.println("오");
+		} else if (n == 6)	{
+			System.out.println("여섯");
+		} else if (n == 7)	{
+			System.out.println("칠");
+		} else if (n == 8)	{
+			System.out.println("팔");
+		} else if (n == 9)	{
+			System.out.println("구");
+		} else {
+			System.out.println("입력범위 초과");
+
+위와 같이 판별해야 하는 case 가 여러가지 일 때 if ~ else if 를 사용할 수 있지만 문장 구조가 복잡해짐
+이럴때에 switch case 를 사용하면 좀 더 간결하게 표현 가능
+
+
+----------------------------------------------------------------------------------------------------------
+** switch case 형식
+
+switch( 항(변수, 호출, 수식 등) ){
+	case 값1 : 명령어1;
+	case 값2 : 명령어2;
+	case 값3 : 명령어3;
+	... 
+	default : 명령어n;
+} 
+
+case 부터 끝까지 동작함
+해당 case 까지만 동작 시키고자 한다면
+각 case문 끝에 break를 둬야됨
+한줄에 break 까지 가능함.
+
+----------------------------------------------------------------------------------------------------------
+
+반복문 : 특정 명령어들을 조건에 만족하는 동안 계속 반복 수행
+
+for
+while
+do~while
+
+for 문을 사용하는 형식
+for(항1; 항2; 항3){
+	반복시킬 명령어들
+}
+항1 : 초기값
+항2 : 조건식
+항3 : 증감식
+
+while (조건식) {
+	반복시킬 명령어들
+}
+
+do{
+	반복시키고자하는 명령어
+}while(조건식);
+
+
+import java.util.Scanner;
+class  D{
+	public static void main(String[] args) {
+		Scanner sc = new Scanner(System.in);
+		int f;
+		System.out.print("");
+
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

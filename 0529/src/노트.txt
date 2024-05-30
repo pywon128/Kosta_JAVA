@@ -1,0 +1,112 @@
+    public void sayHello(){
+        for (int i = 1; i <= 5; i++) {
+            System.out.println("hello, "+name+" ==> "+i);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+            Person p = new Person("김유신");
+            p.sayHello();
+            Person p2 = new Person("이순신");
+            p2.sayHello();
+        }
+hello, 김유신 ==> 1            hello, 이순신 ==> 1
+hello, 김유신 ==> 2            hello, 이순신 ==> 2
+hello, 김유신 ==> 3    ->      hello, 이순신 ==> 3
+hello, 김유신 ==> 4            hello, 이순신 ==> 4
+hello, 김유신 ==> 5            hello, 이순신 ==> 5
+
+
+메서드를 호출하면 호출한 순서대로 동작
+객체 p2 에 입장에서는 p의 sayHello()가 모두 끝나야 자신에게 기회가 옴
+만약 p가 sayHello()를 동작하다가 문제가 발생되면 p2 는 동작을 안할 수 있음
+p와 p2가 공평하게 작업을 수행하도록 하려면 "멀티 쓰레드 프로그래밍" 으로 가능함
+
+자바에서는 멀티쓰레드 프로그래밍을 위하여 Thread 클래스와 Runnable 인터페이스를 이용
+Thread 클래스를 상속하거나 Runnable 인터페이스를 구현하거나 공평하게
+동작시키고자 하는 일을(즉 쓰레드가 해야할 일은) run 메서드를 오버라이딩하여 작성
+쓰레드를 가동시키기 위해서는 start() 메서드를 호출함
+만약 start() 메서드를 호출하지 않고 직접 run() 을 호출하면 오류는 나지 않지만
+공평하게 스케쥴링은 되지 않고 일반메서드처럼 동작
+먼저 호출한 객체가 작업이 완료되고 다음의 객체에게 기회가 옴
+그래서 쓰레드를 가동시키려면 run()호출하는 것이 아니라 start()를 호출해야 함
+
+또 Runnable 인터페이스를 구현한 경우에는 Runnable 인터페이스는
+쓰레드를 가동시키기 위한 start()메서드가 없기 때문에 Thread 객체로 포장한 후 start()호출
+
+----------------------------------------------------------------------------------------------
+public class Person extends Thread{
+    private String name;
+    public Person(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public void run() {
+        for (int i = 1; i <= 5 ; i++) {
+            System.out.println("hello, "+name+" ==> "+i);
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+}
+----------------------------------------------------------------------------------------------
+public class PersonTest {
+    public static void main(String[] args) {
+        Person p1 = new Person("김유신");
+        Person p2 = new Person("이순신");
+
+        p1.start();
+        p2.start();
+    }
+}
+----------------------------------------------------------------------------------------------
+hello, 김유신 ==> 1
+hello, 이순신 ==> 1
+hello, 김유신 ==> 2
+hello, 이순신 ==> 2
+hello, 김유신 ==> 3
+hello, 이순신 ==> 3
+hello, 김유신 ==> 4
+hello, 이순신 ==> 4
+hello, 김유신 ==> 5
+hello, 이순신 ==> 5
+
+----------------------------------------------------------------------------------------------
+Runnable 인터페이스
+
+public class Person implements Runnable{
+    private String name;
+    public Person(String name){
+        this.name = name;
+    }
+    @Override
+    public void run() {
+        for (int i = 1; i <=5 ; i++) {
+            System.out.println("hello, "+name+" ==> "+i);
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+}
+public class PersonTest {
+    public static void main(String[] args) {
+        Person p1 = new Person("김유신");
+        Person p2 = new Person("이순신");
+
+        new Thread(p1).start();
+        new Thread(p2).start();
+    }
+}
+----------------------------------------------------------------------------------------------

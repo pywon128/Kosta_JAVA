@@ -1,0 +1,73 @@
+1.배열 : 자료형이 같은 기억장소의 모임
+	참조자료형 : 변수자신이 값을 갖고 있는 것이 아니라 값이 있는 메모리를 참조하는 자료형
+	=> 객체변수, 배열
+
+for each 반복문
+배열의 요소만큼 반복 시키는 문장을 말한다.
+
+for(자료형 + 변수이름 : 배열){
+	명령어(들)
+}
+
+------------------------------------------------------------
+1-1) 30개의 원소를 가지는 int형 배열로 studentNumbers 변수로 참조된다
+	int[] studentNumbers = new int[30];
+
+1-2) 100개의 원소를 가지는 double 형 배열로 profits 변수로 참조된다.
+	double[] profits = new double[100];
+
+1-3) 200개의 원소를 가지는 char형 배열로 prverbs 변수로 참조된다.
+	char[] proverbs = new char[2000];
+
+1-4) 1.2, 3.3, 6.7 과 같은 값을 가지는 double형 배열을 생성하고 초기화 한다.
+	double[] d = {1.2, 3.3, 6.7};
+
+2-1 int[] numbers = new numbers[100];
+	=> int로 선언하였기 때문에 new int 로 생성해야 된다.
+2-2 double rainfalls[100] = new double();
+	=> double[] 을 선언하고, [100]은  "= new double" 뒤에 있어야 한다.
+
+4. numbers 배열의 인덱스 0~4까지에는 1~5까지 숫자가 차례대로 들어가 있다.
+	출력 결과 : 2 3 4 5 에러
+
+5. 사용자에게 배열의 크기를 물어보고 그 크기대로 배열을 생성하는 문장
+	double[] readings;
+	Scanner sc = new Scanner(System.in);
+	int n;
+	System.out.print("숫자 : ");
+	n = sc.nextInt();
+	readings = new double[n];
+
+메서드 : 어떤 기능을 수행하기 위한(어떤 문제해결을 위한) 서로 관련있는 명령어 들의 집합
+메서드 형식 : 
+ 
+  자료형 	메서드 이름( 매개변수(들) ){
+	명령어(들);
+	return [값];	
+	}
+<< 1차원 배열 >>
+int[] a = new int[3];
+[ ] [ ] [ ]  <== 정수형 변수가 3칸
+
+<< 2차원 배열 >>
+int[][] b = new int[4][3];
+==> 정수형 변수 3칸짜리가 4줄
+b[2][1] = 5;
+     0   1   2
+ 0 [  ]  [  ]  [  ]
+ 1 [  ]  [  ]  [  ]
+ 2 [  ]  [ 5 ]  [  ]
+ 3 [  ]  [  ]  [  ]
+
+int[][] c = new int[3][];
+이렇게도 됨
+c[0] = new int[5];  //c[0] 번째 열은 5개
+c[1] = new int[2];  //c[1] 번째 열은 2개
+c[2] = new int[6];  //c[2] 번재 열은 6개
+
+	//forEach로 출력
+        for (int[] arr : a) // 행가져옴 0 1 2
+            for (int num : arr)
+
+
+

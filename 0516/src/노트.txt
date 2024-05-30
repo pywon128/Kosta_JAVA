@@ -1,0 +1,230 @@
+<< 메서드 호출 >>
+1. 값에 의한 호출 ( call by value )
+   => 메서드 안에서 매개변수로 전달된 값이 변경되더라도 호출한 쪽에서는 적용되지 않음
+2. 참조에 의한 호출( call by reference )
+   => 메서드 호출시에 참조자료형이 전달되는 것을 말하며
+	메서드 안에서 매개변수로 전달된 변수의 내용이 변경이 될 때에 호출한 쪽에서 적용됨
+
+<< 정렬하기 >>
+==> 값을 순서대로 오도록 배치하는 것
+
+1. 오름차순 정렬
+	1 2 3 4 5
+2. 내림차순
+	5 4 3 2 1
+
+int[] a = {17,16,15,7,9,11}; 
+ 0     1    2     3     4     5
+[   ] [   ] [    ] [    ] [    ] [   ]
+ 17  16    15    7     9     11 
+
+ 0     1    2     3     4     5
+[   ] [   ] [    ] [    ] [    ] [   ]
+
+for(int i =0; i<a.length; i++){
+	for(int j = i+1; j<a.length; j++){
+		if ( a[j] < a[i] ){
+			int temp;
+                    		temp = a[i];
+                    		a[i] = a[j];
+                    		a[j] = temp;
+		}	
+	}
+}
+int[] a = {17,16,15,7,9,11};
+int temp;
+for(int i =0; i<a.length; i++){
+	for(int j = i+1; j<a.length; j++){
+		if ( a[j] < a[i] ){
+                    	temp = a[i];
+                    	a[i] = a[j];
+                   	 a[j] = temp;
+		}
+	}
+}
+
+import java.util.Scanner;
+
+public class D05StudentSortTest {
+
+    // 5명 학생의 이름, 국어, 영어, 수학을 입력받아 총점, 평균을 구하고 성적순으로 나열
+
+    public static void main(String[] args){
+        Scanner sc = new Scanner(System.in);
+
+        String[] names = new String[5];
+        int[] kor = new int[5];
+        int[] eng = new int[5];
+        int[] math = new int[5];
+        int[] tot = new int[5];
+        double[] avg = new double[5];
+
+        for (int i = 0; i < names.length; i++) {
+            System.out.printf("%d번째 학생의 이름 ==> ", i+1);
+            names[i] = sc.next();
+            System.out.print("국어 점수 : ");
+            kor[i] = sc.nextInt();
+            System.out.print("영어 점수 : ");
+            eng[i] = sc.nextInt();
+            System.out.print("수학 점수 : ");
+            math[i] = sc.nextInt();
+            tot[i] = kor[i] + eng[i] + math[i];
+            avg[i] = tot[i] /3.0;
+        }
+
+        System.out.println("*** 성적 처리 결과 ***");
+        System.out.println("이름\t국어\t영어\t수학\t총점\t평균");
+        System.out.println("--------------------------------------------");
+        for (int i = 0; i < names.length; i++) {
+            System.out.printf("%s\t%d\t%d\t%d\t%d\t%.2f\n",
+                    names[i], kor[i], eng[i], math[i], tot[i], avg[i]);
+
+        }
+        String temp_name="";
+        int temp_score=0;
+        double temp_avg=0.0;
+        for (int i = 0; i < tot.length; i++) {
+            for (int j = i+1; j < tot.length; j++) {
+                if (tot[j]>tot[i]){
+                    temp_name = names[i];
+                    names[i] = names[j];
+                    names[j] = temp_name;
+
+                    temp_score = kor[i];
+                    kor[i] = kor[j];
+                    kor[j] = temp_score;
+
+                    temp_score = eng[i];
+                    eng[i] = eng[j];
+                    eng[j] = temp_score;
+
+                    temp_score = kor[i];
+                    math[i] = math[j];
+                    math[j] = temp_score;
+
+                    temp_score = tot[i];
+                    tot[i] = tot[j];
+                    tot[j] = temp_score;
+
+                    temp_avg = avg[i];
+                    avg[i] = avg[j];
+                    avg[j] = temp_avg;
+                }
+            }
+        }
+        System.out.printf("*** 총점으로 정렬한 결과 ***\n");
+        for (int i = 0; i < names.length; i++) {
+            System.out.printf("%s\t%d\t%d\t%d\t%d\t%.2f\n",
+                    names[i], kor[i], eng[i], math[i], tot[i], avg[i]);
+        }
+    }
+}
+
+==> 위의 코드는 성적순으로 정렬하는 코드 입니다.
+==> 총점을 비교하여 비교하는 학생의 총점이 i번째 학생의 총점보다 더 크다면
+	이름, 국어, 영어, 수학, 총점, 평균을 각각 바꿔줘야 합니다.
+
+=> 위와 같이 "기본자료형"만으로 프로그래밍 할 때에 불가능 한 것은 아니지만
+	정렬하고자 할 때 일일이 바꿔줘야 하는 것은 귀찮고 시간이 오래 걸림
+
+=> 이럴때에 한명의 학생의 정보(이름,국어,영어,수학,총점,평균)을 하나의 세트로 하는
+	"새로운 자료형"을 만들면 보다 더 간결하게 표현 가능
+
+=>
+	class 새로운자료형이름 {
+		세트를 이루는 구성요소(들)
+	}
+
+	class Student{
+		String name;
+		int kor, eng, math, tot;
+		double avg;
+		
+	}
+
+-----------------------------------------------------------------------------------------------------
+
+int[] a;
+a = new int[5];		<- int의 변수 5개를 만듬
+
+Student[] data;
+data = new Student[5];	<- Student의 변수 5개를 만듬
+
+c++, 자바 
+=>객체 지향 프로그래밍(Object Oriented Programming)
+=> 현실세계의 모든 것을 객체화 할 수 있다.
+
+객체
+=> 이세상에서 유일 한 것
+=> 각각의 객체에는 객체를 나타내기 위한 여러가지 "속성"들로 구성되어 있음
+
+자바언어로 "객체지향 프로그래밍을 할 때에는" 먼저,
+표현하고자 하는 객체에 대하여 "속성"과 "동작"을 분석
+---> 클래스를 만듬
+
+클래스 : 객체를 만들기 위한 틀(설계도)에 해당
+
+객체를 만들기 전에는 먼저 그 객체를 표현하기 위한 속성과 동작을 분석하여 "클래스"를 만들어야 함
+
+클래스 구성
+	속성 : 맴버변수
+	동작 : 맴버메서드
+
+
+
+사람(Person)
+	속성
+		이름	String	
+		성별	String	"남자", "여자"
+		나이	int 	
+	동작
+		void eat(String food)
+		walk (String where)
+
+객체지향 프로그래밍의 특징
+	1) 은닉성(encapsulation) : 외부의 다른 클래스로 부터 속성(맴버변수)를 보호하는 것
+		접근명시자 :	private(전용부)	: 클래스 자신만 접근 가능
+				public(공용부)	: 외부의 어떤 클래스라도 접근 가능
+	
+
+
+객체지향 프로그래밍의 첫 번째 특징이 은닉성에 맞추어 person클래스를 만들면
+다음과 같이 모든 속성들을 private 영역에 둡니다.
+
+private String name;
+private String gender;
+private int age;
+
+위와 같이 모든 속성들이 private영역에 있으면 외부의 다른 클래스에서는
+직접 맴버변수에 접근할 수 없고 public에 잇는 메서드를 통해서 접근할 수 있도록 만들어야함
+접근하여 값을 변경시키는 동작도 필요하고 접근하여 값을 읽어 오는 동작도 필요함
+
+값을 변경하는 동작 => set---()	setter 설정자
+값을 읽어오는 동작 => get---()	getter 접근자
+
+---------------------------------------------------------------------------------
+
+생성자(constructor)
+==> 클래스 이름과 같은 이름의 특수한 메서드를 말함
+	객체 생성시에 자동수행되어 맴버변수들의 값을 초기화 할 목적으로 사용함
+
+==> 일반 메서드는 호출문에 의해 동작하지만
+	생성자는 객체생성시에 자동 수행되기 때문에 return 의 개념이 없음
+	, 따라서 생성자 앞에는 일반 메서드 처럼 return type 을 쓰지 않음 (void x)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

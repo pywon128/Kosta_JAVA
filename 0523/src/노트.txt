@@ -1,0 +1,85 @@
+final 키워드가 올 수 있는 곳
+
+1. 변수명 앞 -- 초기값 지정해야됨, 변경 할 수 없음
+    => 변수의 형태를 띠지만 상수로 사용하고자 할 때 사용
+
+2. 메서드명 앞 -- 오버라이딩 못함
+    => 일반적으로 상속관게에 있을 때 하위 클래스의 부모의 메서드를 필요하다면
+	오버라이딩 할 수 있지만 상위 클래스를 만들 때 하위 클래스들이 특정 메서드를 
+	오버라이딩 할 수 없게 하기 위한 방법
+
+3. 클래스명 앞 -- 상속 금지
+    => 특정 클래스를 확장하여 새로운 속성이나 동작을 추가하지 않도록 하려면 final 클래스로 만들면 됨
+
+-----------------------------------------------------------------------------------------------------------------
+
+자바의 컬렉션 프레임워크 ( 동적인 배열 )
+==> 배열은 자료형이 같은 기억장소의 모임이며
+	많은 양의 데이터를 처리하기에 적합함
+	배열의 크기를 미리 정해야 하므로 용량이 부족하거나 낭비가 되는 경우가 존재
+	배열 중간에 데이터를 추가하거나 삭제할 때 번거로움
+
+==> 배열의 단점을 보완하기 위하여 동적 배열인 컬렉션 프레임워크를 만들어 둠
+
+<< 컬렉션 프레임워크 종류 >>
+1. Set : 데이터 중복 허용 x
+	
+	- HashSet	: 중복 x, 입력한 순서 유지x
+	- LinkedHashSet	: 중복 x, 입력한 순서 유지o
+	- TreeSet		: 중복 x, 정렬기능있음( 자료형이 같아야 함)
+
+	All Superinterfaces:
+	Collection<E>, Iterable<E>
+
+	interface Set extends Collection, Iterable{
+	} // set인터페이스는 collection, iterable 을 확장하여 만듬
+
+
+	All Known Subinterfaces:
+	NavigableSet<E>, SortedSet<E>
+
+	interface NavigableseSet extends Set{
+	} // set 인터페이스로 구현한 인터페이스
+
+
+	All Known Implementing Classes:
+	AbstractSet, ConcurrentHashMap.KeySetView, ConcurrentSkipListSet, CopyOnWriteArraySet, EnumSet,
+	HashSet, JobStateReasons, LinkedHashSet, TreeSet
+
+	class HashSet implements Set{
+	} //set 인터페이스로 구현한 클래스
+
+2. List : 데이터의 중복을 허용
+	- ArrayList  	: 자바의 컬렉션중에서 가장 많이 사용 
+	- LinkedList	: 데이터의 중간에 추가 삭제가 빈번한 경우에 사용하면
+				ArrayList보다는 효율적임
+
+3. Map : Key, value 가 한쌍으로 이루어진 자료구조
+	( 인덱스 대신에 key에 의해 데이터에 접근하는 방식 )
+	=> 사전자료형
+
+-----------------------------------------------------------------------------------------------------------------
+
+interface A{
+
+}
+
+interface AA{
+
+}
+
+interface B extends A, AA{
+	// 인터페이스 끼리 상속 가능(다중상속도 가능)
+}
+
+class B implements A{
+
+}
+
+인터페이스를 구현하는 클래스를 만들 때는 implements
+인터페이스를 상속받은 인터페이스를 만들 때는 extends
+
+
+
+
+
