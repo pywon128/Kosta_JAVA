@@ -28,7 +28,7 @@ public class Person extends Thread{
 
             account.call(name, i, 1000);
 //            System.out.println(name+" 의 "+i+"번째 입금");
-            try {Thread.sleep(700);}
+            try {Thread.sleep(0);}
             catch (InterruptedException e) { throw new RuntimeException(e); }
         }
 //        System.out.println("전체 모금액 : "+account.getBalance());

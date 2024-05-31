@@ -95,7 +95,7 @@ public class FourWeek {
             } else continue;
 
             System.out.println("******* 출력 *******");
-            System.out.printf("%s님\n생년 : %s띠\t|\t%s\n생월 : %d\t|\t%s\n생일 : %d\t|\t%s\n생시 : %d\t|\t%s\n",
+            System.out.printf("%s님\n생년 : %s띠\t|\t%s\n생월 : %d  \t|\t%s\n생일 : %d  \t|\t%s\n생시 : %d\t|\t%s\n",
                     inputName, inputStrYear, result[0], inputMonth, result[1], inputDay, result[2], inputTime, result[3]);
         } // while
     } // main
