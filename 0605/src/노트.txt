@@ -1,0 +1,26 @@
+자료를 조회하는 데이터베이스 명령어
+    SELECT 컬럼이름1, 컬럼이름2, ... FROM 테이블명;
+
+ex) student 테이블로 부터 학생의 이름을 조회
+    SELECT name FROM student;
+
+ex) student 테이블로 부터 학생의 이름과 영어점수를 조회
+    SELECT name,eng FROM student;
+
+ex) student 테이블로 부터 학생의 이름,국여,영어,수학을 조회
+    SELECT * FROM student;
+
+<< 조건을 만족하는 데이터의 조회 >>
+    SELECT 컬럼이름1, 컬럼이름2 ... FROM 테이블 이름 WHERE 조건식;
+
+ex) 국어점수가 80점이상인 학생들의 이름, 국어 점수 조회
+    SELECT name, kor FROM student WHERE kor >= 80;
+
+ex) 이름이 '호날두'인 학생의 국어 점수를 조회
+    SELECT kor FROM student WHERE name='호날두';
+
+ex) 이름이 '호날두'인 학생의 모든 속성을 조회
+    SELECT * FROM student WHERE name='호날두';
+
+-------------------------------------------------------------------------------------
+

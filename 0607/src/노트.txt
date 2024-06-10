@@ -1,0 +1,43 @@
+<< 레코드(데이터베이스) 수정하는 명령어 >>
+update 테이블명 set 컬럼1 = 값1, 컬럼2 = 값2 ... [where 조건식]
+
+update student set kor =100, eng=50;
+ => 모든 학생의 국어 영어가 100, 50 으로됨
+
+ex) 호날두인 학생의 국어 점수를 100을 변경
+update student set kor = 100 where name='호날두';
+
+-----------------------------------------------------------------------------------
+데이터베이스에 변경이 있는 명령(insert, update, delete)을 실행한 후에는
+반드시 commit, rollback을 해야 함
+변경된 내용을 반영하려면 commit, 취소하려면 rollback해야 함
+
+update student set kor= 100, eng=100, math=100 where name = '이순신';
+
+<< 데이터베이스 레코드를 삭제하는 명령어 >>
+delete 테이블명 [where 조건식];
+
+ex) student 테이블의 모든 레코드 삭제 명령어
+=> delete student;
+
+ex) student 테이블로 부터 학생이름이 '홍길동'인 레코드 삭제
+=> delete student where name='홍길동';
+
+-----------------------------------------------------------------------------------
+상품관리 시스템을 위한 "상품" 테이블 만들기
+상품번호    상품명     수량      가격
+create table goods(
+    no number / primary key,
+    item varchar2(20)
+    qty number
+    price number
+)
+
+<< 데이터베이스 변동이 있는 명령을 실행할 때 >>
+stmt.executeUpdate(sql) => int 반환
+// 데이터베이스에 변동이 있는 명령을 실행할 때 ( 추가, 수정, 삭제 )
+// 성공적으로 명령을 수행한 레코드의 수를 반환
+
+stmt.executeQuery(sql) => ResultSet 반환
+// 데이터베이스의 내용을 조회할 때
+// 조회한 결과를 ResultSet 으로 반환
