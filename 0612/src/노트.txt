@@ -1,0 +1,293 @@
+데이터베이스 명령어 종류
+1. DDL 데이터 정의어
+2. DML 데이터 조작어     <--
+3. DCL 데이터 제어어
+
+DML의 종류
+1. 레코드의 추가  INSERT
+2. 레코드의 조회  SELECT  <--
+3. 레코드의 수정  UPDATE
+4. 레코드의 삭제  DELETE
+
+연습) 직책별로 사원의 수, 평균급여액을 출력, 사원수가 높은 순으로 출력
+    select job, count(*), avg(salary)
+    from emp
+    group by job
+    order by count(*) desc;
+
+연습) 부서명별로 사원의 수, 총급여액, 평균급여액을 출력, 총급여액이 높은 순으로 출력
+    select dname, count(*) cnt, sum(salary) sum, avg(salary) avg
+    from emp e, dept d
+    where e.dno = d.dno
+    group by dname
+    order by sum desc;
+
+연습) 개발팀에 근무하는 직원들의 직책별 평균급여액을 출력
+            평균급여액이 높은순으로 출력
+    select job, avg(salary)
+    from emp e, dept d
+    where e.dno = d.dno
+    and dname like '%개발%'
+    group by job
+    order by avg(salary) desc;
+
+연습) '대한미디어'나 '이상미디어'의 도서명별로 판매건수를 출력, 판매건수가 높은순으로 출력
+    select bookname, count(*)
+    from book b, orders o
+    where b.bookid = o.bookid
+    and publisher in('대한미디어', '이상미디어')
+    group by bookname
+    order by count(*) desc;
+
+BOOKNAME               COUNT(*)
+-------------------- ----------
+야구를 부탁해                 2
+축구의 이해                   1
+야구의 추억                   1
+
+--> 위의 결과에서 만약에 판매건수가 2개 이상인것만 조회하고 싶으면 having 을 사용
+
+<< having 의 사용 >>
+group by 절에 나타난 결과에 대하여 조건식을 주고자 할 때 사용
+
+연습) '대한미디어'나 '이상미디어'의 도서명별로 판매건수를 출력,
+            판매건수가 2건 이상인 것만 출력 하고 판매건수가 높은순으로 출력
+    select bookname, count(*)
+    from book b, orders o
+    where b.bookid = o.bookid
+    and publisher in ('대한미디어', '이상미디어')
+    group by bookname
+    having count(*) >= 2
+    order by count(*) desc;
+
+select 문 형식
+select 컬럼(들), [집계함수(들)]
+from 테이블이름(들)
+[where 조건식]		<--- 조회하고자 하는 레코드의 조건식
+[group by 컬럼(들)]		<--- 특정 컬럼의 값의 종류별로 집계함수를 나타내고자 할 때 사용
+[having 조건식]
+[order by 컬럼(들)]		<--- 조회한 컬럼중에 특정 컬럼을 기준으로 정렬하고자 할 때 사용
+
+select 문 형식 순서
+select 컬럼(들)      5
+from 테이블이름(들)   1
+[where 조건식]       2
+[group by 컬럼(들)]  3
+[having 조건식]      4
+[order by 컬럼(들)]	6
+
+연습) 고객명별로 구매건수와 총구매금액을 출력, 총구매금액이 10000원 이상인것만 출력
+            총구매금액이 높은 순으로 출력
+    select name, count(*), sum(saleprice)
+    from customer c, orders o
+    where c.custid = o.custid
+    group by name
+    having sum(saleprice) >= 10000
+    order by sum(saleprice) desc;
+-----------------------------------------------------------------------------------------
+
+where c.custid = o.custid
+
+// 두 테이블의 custid 값이 같은 행을 결합합니다.
+// 이 결합된 데이터는 SELECT, GROUP BY, HAVING 및 ORDER BY 절에서 사용할 수 있습니다.
+
+   customer 테이블                   orders 테이블
+    custid | name           orderid | custid | saleprice
+    -------|------          --------|--------|----------
+    1      | Alice          101     | 1      | 5000
+    2      | Bob            102     | 1      | 7000
+    3      | Carol          103     | 2      | 2000
+                            104     | 3      | 15000
+
+조인 결과
+custid | name  | orderid | saleprice
+-------|-------|---------|----------
+1      | Alice | 101     | 5000
+1      | Alice | 102     | 7000
+2      | Bob   | 103     | 2000
+3      | Carol | 104     | 15000
+
+
+-----------------------------------------------------------------------------------------
+
+연습) '판교'나 '종로'에 근무하는 직원들의 부서명별로 근무하는 직원의 수, 총급여액, 평균급여액을 출력
+            직원의 수가 2명 이상인 부서만 출력하고 총급여액이 높은 순으로 출력
+                총급여액이 동일 할 때에는 평균 급여액 순으로 출력
+    select dname, count(*), sum(salary), avg(salary)
+    from emp e, dept d
+    where e.dno = d.dno
+    and dloc in ('판교', '종각')
+    group by dname
+    having count(*)>=2
+    order by sum(salary) desc, avg(salary);
+
+연습) '축구' 관련 도서에 대하여 도서명별로 판매건수를 출력, 판매건수가 높은순으로 출력
+    select bookname, count(*)
+    from book b, orders o
+    where b.bookid = o.bookid
+    and bookname like '%축구%'
+    group by bookname
+    order by count(*) desc;
+
+
+      ENO ENAME      JOB        HIREDATE          SALARY   DNO   MGR
+    ----- ---------- ---------- --------------- -------- ----- -----
+     1000 변시우     사장       10/01/03           1,000    10
+     1001 이동준     과장       12/08/27             600    10  1000
+     1002 박성빈     대리       14/07/28             400    10  1001
+     1003 임유나     사원       23/10/10             200    10  1002
+     1004 홍석영     사원       18/02/17             200    10  1002
+     1005 최모래     과장       13/01/02             500    20  1000
+     1006 유요한     대리       14/01/02             400    20  1005
+     1007 유현진     사원       20/09/12             300    20  1006
+     1008 박규희     사원       20/09/12             300    20  1006
+     1009 박준수     과장       12/12/03             500    30  1000
+
+=> '박성빈' 직원의 관리자는 '이동준'입니다.
+=> emp 테이블의 mgr은 emp 테이블의 eno를 참조합니다.
+만약 모든 직원의 이름과 관리자 이름을 출력해야 한다면
+self join을 할 수 있음, 물리적으로 테이블은 emp 라는 것 한개만 있음
+이것을 한번은 '직원'이라고 보고 한번은 '관리자'로 보아 두개를 조인하여
+직원이름과 관리자 이름을 조회할 수 있음
+
+======================================================
+self join
+실제로는 하나의 테이블인데
+컬럼의 값이 그 테이블의 다른 컬럼을 참조할 때 사용하는 조인
+emp 테이블의 mgr 은 emp 테이블의 eno 를 참조하고 있음
+만약 직원의 이름과 관리자 이름을 출력하고자 한다면
+emp 테이블 하나는 '직원'이라고 별칭을 주고
+하나는 '관리자'라고 별칭을 주어 조인할 수 있음
+이것을 self join 이라고 함
+
+emp e ( 직원 )
+emp m ( 관리자 )
+
+select e.ename, m.ename
+from emp e, emp m
+where e.mgr = m.eno;
+
+연습) '개발'팀에 근무하는 모든 직원들의 사원번호, 사원명, 관리자명, 부서번호, 부서명을 출력
+    select e.eno, e.ename, m.ename, d.dno, d.dname
+    from emp e, emp m, dept d
+    where e.mgr = m.eno and e.dno = d.dno
+    and d.dname like '%개발%';
+
+연습) '개발'팀에 근무하는 직원들 중에 관리자보다 입사일이 빠른 직원의
+            사원번호, 사원명, 관리자명, 입사일, 관리자의 입사일을 출력
+    select e.eno, e.ename, m.ename, e.hiredate, m.hiredate
+    from emp e, emp m, dept d
+    where e.mgr = m.eno
+    and e.dno = d.dno
+    and d.dname like '%개발%'
+    and e.hiredate < m.hiredate;
+
+연습) '판교'나 '종각'에 근무하고 직책이 '사원'이거나 '대리'인 직원들 중에
+            입사일이 관리자보다 빠르거나 급여가 관리자보다 많은 직원들의
+                사원번호, 사원명, 관리자명, 입사일, 관리자의 입사일, 급여, 관리자의 급여를 출력
+                    입사일 순으로 출력하고 동일할 때에는 급여가 높은 순으로 출력
+    select e.eno, e.ename, m.ename, e.hiredate, m.hiredate , e.salary, m.salary
+    from emp e, emp m, dept d
+    where e.mgr = m.eno and d.dno = e.dno
+    and d.dloc in('판교', '종각')
+    and e.job in ('사원', '대리')
+    and (e.hiredate < m.hiredate or e.salary > m.salary)
+    order by e.hiredate, e.salary desc;
+
+연습) '박성빈'의 부하직원들의 사원번호, 사원명, 입사일, 급여를 출력, 입사일 순으로 출력
+    select e.eno, e.ename, e.hiredate, e.salary
+    from emp e, emp m
+    where e.mgr = m.eno
+    and m.ename ='박성빈'
+    order by e.hiredate;
+
+연습) 고객번호로 주문한 건수를 출력
+    select custid, count(*)
+    from orders o
+    group by custid;
+
+연습) 고객이름별로 주문한 건수를 출력
+    select c.name, count(*)
+    from customer c, orders o
+    where c.custid = o.custid
+    group by name;
+=> 주문이 없는 고객은 출력되지 않음
+->  inner join
+=> 양쪽 테이블에 모두 조건을 만족하는 레코드만 조회함
+=> 만약 주문이 없는 고객이름도 출력하고자 한다면
+    outter join 이용
+
+일반적인 조인 (inner join)
+=> 두개의 테이블에 모두 조건식을 만족하는 레코드를 검색
+
+외부조인 (outer join)
+=> 두개의 테이블에 왼쪽이나 오른쪽에 레코드는 조건을 만족하지 않더라도 모두 검색
+
+left outer join
+=> 조건을 만족하지 않더라도 왼쪽의 테이블은 무조건 검색
+
+right outer join
+=> 조건을 만족하지 않더라도 오른쪽의 테이블은 무조건 검색
+
+<< outer join 의 형식 >>
+select 컬럼이름(들)
+from 테이블1 [right|left] outer join 테이블2
+on 조건식
+
+연습) 모든 고객에 대하여 주문 건수 출력( 주문이 없는 고객도 출력)
+    select c.name, count(o.custid)
+    from customer c left outer join orders o
+    on c.custid = o.custid
+    group by name;
+
+연습) 관리자이름별로 부하직원의 수를 출력하시오
+        부하직원이 없는 직원의 이름도 출력
+    select m.ename, count(e.ename)
+    from emp m left outer join emp e
+    on m.eno = e.mgr
+    group by m.ename;
+
+연습) 부서명별로 총직원의 수를 출력하시오
+        소속된 직원이 없는 부서명도 출력
+    select d.dname, count(e.ename)
+    from dept d left outer join emp e
+    on d.dno = e.dno
+    group by dname;
+
+연습) 출판사별로 총주문건수, 총주문금액을 출력
+        주문내역이 없는 출판사도 출력
+    select publisher, count(orderid), sum(saleprice)
+    from book b left outer join orders o
+    on b.bookid = o.bookid
+    group by publisher;
+PUBLISHER            COUNT(ORDERID) SUM(SALEPRICE)
+-------------------- -------------- --------------
+굿스포츠                          3          20000
+대한미디어                        1          21000
+이상미디어                        3          46000
+나무수                           1          12000
+Pearson                         2          19000
+코스타미디어                      0
+삼성당                           0
+
+=> count 함수는 조건을 만족하는 레코드가 한개도 없으면 0으로 출력
+=> count 이외의 집계함수는 조건을 만족하는 레코드가 없으면 null
+=> null 인 값을 다른값으로 채우고 싶을 때 nvl 함수를 이용 -> nvl(컬럼 , 값)
+
+    select publisher, count(orderid) cnt , nvl(sum(saleprice), 0) sum
+    from book b left outer join orders o
+    on b.bookid = o.bookid
+    group by publisher;
+
+PUBLISHER                   CNT        SUM
+-------------------- ---------- ----------
+굿스포츠                      3      20000
+대한미디어                    1      21000
+이상미디어                    3      46000
+나무수                        1      12000
+Pearson                      2      19000
+코스타미디어                  0          0
+삼성당                       0          0
+
+
+
