@@ -38,7 +38,7 @@ public class GameFrame extends JFrame {
             public void windowClosing(WindowEvent e) {
                 closeMethod();
             }
-        });// 종료 이벤트
+        });
     }
 
     public static void closeMethod(){   // JFrame 종료 메서드
