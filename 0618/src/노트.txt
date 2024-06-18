@@ -1,0 +1,312 @@
+실습을 위하여 emp 테이블에 수당을 의미하는 컬럼을 추가
+
+<< 컬럼 추가하기 >>
+alter table 테이블 이름 add 컬럼이름 자료형;
+alter table emp add comm number;
+
+1) 사원의 이름과 직책을 출력
+    select ename, job from emp where job ='사원';
+2) 10번 부서에 근무하는 모든 직원의 이름과 급여를 출력
+    select ename, salary from emp where dno = 10;
+    2-1) '기획팀'에 근무하는 모든 직원의 이름과 급여
+        select ename, salary from emp e, dept d
+        where e.dno = d.dno and dname = '기획팀';
+
+        select ename, salary from emp
+        where dno = (select dno from dept where dname='기획팀');
+3) 모든 직원에게 급여를 10%인상, 사원번호, 이름, 현재급여, 증가된 급여(열 이름은 '증가액'),
+                        10%인상된 급액( 열 이름은 '인상급여') 를 사원번호 순으로 출력
+    select eno, ename, salary, (salary*0.1) 증가액, (salary + salary*0.1) 인상급여 from emp order by eno;
+4) 이름이 '김'으로 시작하는 모든 직원과 부서번호를 출력
+    select ename, dno from emp where ename like '김%';
+5) 모든 직원의 최대급여, 최소급여, 합계 및 평균급여를 출력
+    select max(salary) max, min(salary) min, sum(salary) sum, avg(salary) avg from emp;
+6) 직책명과 직책별로 동일한 직책의 인원수를 출력
+    select job, count(job) from emp group by job;
+7) 직원의 최대급여와 최소급여의 차액을 출력
+    select (max(salary) - min(salary)) from emp;
+8) 10번 부서의 구성원수와 직원들의 급여의 합계와 평균을 출력
+    select count(dno), sum(salary), avg(salary) from emp where dno = 10 group by dno;
+    8-1) 종각에 근무하는 구성원수와 직원들의 급여의 합계, 평균 출력
+        select count(dno), sum(salary), avg(salary)
+        from emp
+        where dno in(select dno from dept where dloc ='종각');
+9) 평균급여가 가장 높은 부서번호를 출력
+- 부서번호 별로 평균급여를 출력 -> A
+- A 중에서 평균 급여가 최고값을 찾는다 -> B
+- A 중에서 평균 급여가 B인 부서번호를 찾는다
+    select dno, avg(salary) from emp group by dno;
+
+    select max(avg(salary)) from emp group by dno;
+
+    select dno from (select dno, avg(salary) avg from emp group by dno)
+    where avg = (select max(avg(salary)) from emp group by dno);
+
+10) '대리'를 제외하고 각 직책별로 총급여가 2000 이상인 각 직책에 대하여 직책명과 각 직책별 평균급여를 출력
+            평균급여의 내림차순으로 출력
+    select job, avg(salary) from emp where job != '대리' group by job
+    having sum(salary) >= 2000
+    order by avg(salary) desc;
+
+11) 전체직원중에 직속상관이 있는 직원의 수를 출력
+    select count(mgr) from emp;
+12) emp 테이블에서 이름, 급여, 수당, 실수령액을 구하여 실수령액이 높은 순서대로 출력
+            comm이 nulll 인 사람은 제외
+    select ename, salary, comm, salary+comm 실수령액
+    from emp
+    where comm is not null;
+    // null 인 것은 연산이 되지 않음
+
+    select ename, salary, comm, salary+nvl(comm,(select avg(comm) from emp where dno = 10) ) 실수령액
+    from emp;
+
+    select ename, salary, comm, salary+nvl(comm,
+                                (select avg(comm) from emp e2 where e1.dno = e2.dno)) 실수령액
+    from emp e1;
+
+    select avg(comm) from emp where dno = 10;
+13) 각 부서별로 같은 직책의 사람의 인원수를 구하여 부서번호, 직책이름, 인원수를 출력
+    select dno, job, count(*) from emp group by dno, job;
+
+    select (select dname from dept d where d.dno = e.dno), job, count(*) from emp e group by dno, job;
+
+14) 사원이 한명도 없는 부서의 이름을 출력
+    select dname from dept
+    where dno not in (select distinct dno from emp);
+
+    select dname
+    from dept d left outer join emp e
+    on d.dno = e.dno
+    group by dname
+    having count(ename) = 0;
+
+15) 같은 직책을 하는 사람의 수가 2명 이상인 직책과 인원수를 출력
+    select job, count(job) cnt
+    from emp e
+    group by job
+    having count(job) >= 2;
+
+16) 사원번호가 1002 ~ 1010 이하인 직원의 이름을 출력
+    select ename
+    from emp
+    where eno between 1002 and 1010;
+
+17) 직원의 이름과 부서명을 출력
+    select ename, dname
+    from emp e, dept d
+    where e.dno = d.dno;
+
+    select ename, (select dname from dept d where d.dno = e.dno) danme from emp e;
+
+18) 직원의 이름과 관리자이름을 출력
+    select e.ename, m.ename
+    from emp e, emp m
+    where m.eno = e.mgr;
+
+    select ename, (select ename from emp m where e.mgr = m.eno) mgr from emp e;
+
+19) '박규희' 보다 급여를 많이 받는 사람의 이름을 출력
+    select ename from emp where (select salary from emp where ename = '박규희') < salary;
+
+20) '박규희' 가 일하는 부서번호 혹은 '가산'에 있는 부서번호를 출력
+    select distinct d.dno from emp e right outer join dept d
+    on d.dno = e.dno
+    where ename='박규희' or dloc ='가산';
+
+    minus => 앞에 조회한 결과에서 뒤에 조회한 결과를 빼준다
+    union => 앞의 조회결과에 뒤의 조회결과를 합쳐준다.
+
+    select dno from emp where ename = '박규희'
+    union
+    select dno from dept where dloc = '가산';
+
+    select dno from dept
+    where dno = (select dno from emp where ename = '박규희') or dno in (select dno from dept where dloc = '가산');
+
+21) '박규희' 가 일하는 동일한 근무지에 근무하는 사람의 이름을 출력
+    select ename, dloc from emp e, dept d
+    where e.dno = d.dno
+    and dloc = (select dloc from emp e, dept d
+        where e.dno = d.dno and ename ='박규희');
+
+데이터 정의어 (DDL)
+=> 테이블의 구조를 생성(CREATE), 수정(ALTER), 삭제(DROP) 명령어
+-> auto commit 됨
+
+<< 테이블 생성하기 >>
+    create table 테이블이름(
+        속성이름1 자료형 [제약(들)]
+        속성이름2 자료형 [제약(들)]
+        ...
+    );
+<< 제약의 종류 >>
+    null        : null을 허용할 수 있음(기본값)
+    not null    : null을 허용할 수 없음
+    unique      : 유일해야 함
+    default     : 생략하면 설정된 기본값을 사용
+    check       : 들어갈 수 있는 값의 조건
+    primary key : 주식별자 설정
+    foreign key : 참조키 설정(부모와 자식의 관계를 설정)
+
+create table newbook(
+    bookid number,
+    bookname varchar2(20),
+    publisher varchar2(20),
+    price number
+);
+
+<< 데이터의 추가 >>
+insert into 테이블이름 values(값1, 값2 ...)
+    => 값의 수와 순서는 테이블의 구조와 동일해야 함
+insert into 테이블이름(컬럼1, 컬럼2 ..) values(값1, 값2 ...)
+    => 나열한 컬럼의 순서대로 값을 써 주어야 함
+
+insert into newbook values(1, '재미있는 자바', '코스타미디어', 30000);
+insert into newbook values(2, '신나는 자바', null, null);
+insert into newbook(bookname, bookid, price, publisher) values('신나는 오라클', 3, 35000, '한빛미디어');
+insert into newbook(bookid, bookname) values(4, '신나는 스프링');
+insert into newbook(bookid) values(4);
+
+commit => 작업내용(DML)을 반영
+rollback => 작업내용(DML)을 취소
+DDL과 DCL은 자동 commit 되기 때문에 롤백할 수 없음
+
+연습) 책번호와 가격만 가지고 레코드를 추가
+    insert into newbook(bookid, price) values(5, 55000);
+    insert into newbook values(6, null, null, 65000);
+
+<< 테이블의 삭제 >>
+drop table 테이블이름;
+
+<< not null의 제약 >>
+    => 값을 생략할 수 없음
+
+도서번호, 도서명에 not null 제약을 주어 테이블을 만들고 레코드를 추가하여 테스트
+create table newbook(
+    bookid number not null,
+    bookname varchar2(50) not null,
+    publisher varchar2(30),
+    price number
+);
+insert into newbook values(1, '자바입니다', '한빛', 50000);
+insert into newbook values(2, '자바인가요', '빛한', 34000);
+insert into newbook values(3, '자바일껄요', null, null);
+
+insert into newbook values(null, null, '모름', 19999);
+1행에 오류:
+ORA-01400: NULL을 ("C##MADANG"."NEWBOOK"."BOOKID") 안에 삽입할 수 없습니다
+=> bookname 이 null을 허용하지 않기 때문에 오류가 발생함
+
+<< unique 제약 >>
+    값의 중복을 허용하지 않음
+
+연습) 도서번호에 unique 제약을 설정하여 테이블을 생성하고 다양한 레코드를 추가하여 테스트
+create table newbook(
+    bookid number unique,
+    bookname varchar2(50) not null,
+    publisher varchar2(30) null,
+    price number
+);
+
+insert into newbook values(1, '재미있는 자바', '코스타미디어', 30000);
+insert into newbook values(1, '자바', '코스타미디어', 30000);
+1행에 오류:
+ORA-00001: 무결성 제약 조건(C##MADANG.SYS_C008353)에 위배됩니다
+=> bookid를 unique 제약을 설정하였으므로 중복 된 값을 넣을 수 없음
+
+not null => null 이 아닌지만 체크 중복을 허용
+unique => 중복이 되는 지만 체크 null 허용
+
+unique => 중복이 되는지 체크(유일한 값인지만 판별) null 허용
+
+<< primary key >>
+    not null 과 unique를 합쳐 놓은 것
+    다른 레코드와 구별하기 위해 식별자를 설정
+    create table newbook(
+        bookid number primary key,
+        bookname varchar2(50) not null,
+        publisher varchar2(30) null,
+        price number
+    );
+
+<< default >>
+값을 생략하면 기본값을 설정
+    CREATE TABLE newbook(
+        bookid number primary key,
+        bookname varchar2(30) not null
+    )
+
+<< check 제약 >>
+	==> 칼럼의 값에 대하여 조건식을 설정하고자 할 때 사용
+
+연습) 도서의 가격은 10000~50000로 제한
+        출판사는 '삼성당', '코스타미디어', '한빛미디어'로 제한
+
+create table newbook(
+    bookid number primary key,
+    bookname varchar2(30) ,
+    publisher varchar2(30) check (publisher in ('삼성당', '코스타미디어', '한빛미디어')),
+    price number check (price between 10000 and 50000)
+);
+insert into newbook values(1, '책1', '출판사명', 12000);
+insert into newbook values(1, '책1', '삼성당', 50001);
+1행에 오류:
+ORA-02290: 체크 제약조건(C##MADANG.SYS_C008359)이 위배되었습니다
+insert into newbook values(1, '책1', '삼성당', 10000);
+insert into newbook values(2, '책2', '코스타미디어', 49999);
+insert into newbook(bookid, bookname) values (3, '책3');
+// check 제약은 null 을 허용함
+    값이 들어올 때에 조건을 만족하는지 판별
+
+연습) 다음의 조건을 만족하는 newbook 테이블을 만들기
+- 가격은 생략할 수 없고 10000~ 50000 으로 제한
+- 출판사는 생략할 수 없고 기본값 '삼성당', 값의 종류는 '삼성당', '코스타미디어', '대한미디어'로 제한
+create table newbook(
+    bookid number primary key,
+    bookname varchar2(30) ,
+    publisher varchar2(30) default '삼성당' check (publisher in ('삼성당', '코스타미디어', '대한미디어')) ,
+    price number not null check(price between 10000 and 50000)
+);
+insert into newbook(bookid, price) values (10, 49999);
+insert into newbook values (11, '책1', '대한미디어', 49999);
+
+제약의 종류
+null		null을 허용함
+not null		null을 허용하지 않음
+check		컬럼의 값이 만족해야 하는 조건 설정
+unique		컬럼의 값은 유일해야 한다
+default		값을 생략하면 기본값을 설정
+primary key	주식별자 설정 not null 과 unique를 합쳐 놓은 것
+foriegn key	부모테이블과 관계를 설정하기 위하여 참조키 설정
+
+create table newbook(
+    bookid number primary key,
+    bookname varchar2(30) not null,
+    publisher varchar2(30),
+    price number
+);
+
+create table newcustomer(
+    custid number primary key,
+    name varchar2(30),
+    addr varchar2(30),
+    phone varchar2(30)
+);
+
+create table neworders(
+    orderid number primary key,
+    custid number,                  <- 참조키를 설정하지 않았음
+    bookid number,                  <- 참조키를 설정하지 않았음
+    saleprice number,
+    orderdate date
+);
+// 참조키를 설정하지 않고 테이블을 만들면 존재하지 않는 도서나 고객의 주문이 있을 수 있음
+insert into neworders values(1, 10, 20, 999999, sysdate);
+
+
+book 테이블의 모든 레코드를 조회하여 newbook에 insert하기
+insert into newbook select bookid, bookname, publisher, price from book;
+
+insert into newcustomer select custid, name, addr, phone from customer;
+
+오늘 학습한 sql문에 선택하여 관련 프로그래밍

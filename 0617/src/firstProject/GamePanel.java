@@ -13,8 +13,8 @@ public class GamePanel extends JPanel {
         rightImageURL = "C:\\javaTest\\0617\\src\\firstProject\\image\\1_RIGHT.png";
 
         JPanel imagesPanel = new JPanel();
-        JPanel leftImagePanel = new ImagePanel(leftImageURL);
-        JPanel rightImagePanel = new ImagePanel(rightImageURL);
+        JPanel leftImagePanel = new ImagePanel(leftImageURL, Color.RED);
+        JPanel rightImagePanel = new ImagePanel(rightImageURL, Color.BLUE);
 
         imagesPanel.add(leftImagePanel, BorderLayout.CENTER);
         imagesPanel.add(rightImagePanel, BorderLayout.CENTER);
@@ -25,5 +25,9 @@ public class GamePanel extends JPanel {
 
         add(imagesPanel, BorderLayout.CENTER);
         add(new InfoPanel(), BorderLayout.SOUTH);
+
+        while (!CheckAnswer.answer.isEmpty()){
+
+        }
     }
 }

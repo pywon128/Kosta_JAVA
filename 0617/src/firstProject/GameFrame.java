@@ -16,18 +16,18 @@ public class GameFrame extends JFrame {
         super("Finding the Wrong Picture");
 
         gamePanel = new GamePanel();
-        gamePanel.setPreferredSize(new Dimension(1450,900));
+        gamePanel.setPreferredSize(new Dimension(1450,850));
 //        gamePanel.setBorder(new LineBorder(Color.BLACK));
 
-        chattingPanel = new ChattingPanel();
-        chattingPanel.setPreferredSize(new Dimension(330, 900));
+//        chattingPanel = new ChattingPanel();
+//        chattingPanel.setPreferredSize(new Dimension(330, 900));
 //        chattingPanel.setBorder(new LineBorder(Color.GREEN));
 
         add(gamePanel, BorderLayout.WEST);
-        add(chattingPanel, BorderLayout.EAST);
+//        add(chattingPanel, BorderLayout.EAST);
 
 
-        setSize(1800,850);
+        setSize(1470,850);
         setVisible(true);
         setResizable(false);    // 사이즈 고정
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);   //종료 이벤트

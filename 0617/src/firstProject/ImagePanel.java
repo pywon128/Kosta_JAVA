@@ -9,11 +9,16 @@ import java.util.List;
 
 public class ImagePanel extends JPanel {
     private ImageIcon imageIcon;
-    private List<Point> points = new ArrayList<>();
+    private List<Point> points;
     private Point clickPoint;
+    private Color color;
+    private CheckAnswer checkAnswer;
 
-    public ImagePanel(String imageURL) {
-        clickPoint = new Point();
+    public ImagePanel(String imageURL, Color color) {
+        clickPoint = new Point(-100, -100);
+        this.color = new Color(color.getRGB());
+        checkAnswer = new CheckAnswer();
+        points = new ArrayList<>();
 
         imageIcon = new ImageIcon(imageURL);
         ImageLabel imageLabel = new ImageLabel(imageIcon);
@@ -39,19 +44,30 @@ public class ImagePanel extends JPanel {
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
+            System.out.println(points);
+            points.add(clickPoint); // 클릭한 위치
 
             // 빨간 동그라미를 그림
             Graphics2D g2 = (Graphics2D) g;
-            g2.setColor(Color.RED);
+            g2.setColor(color);
             g2.setStroke(new BasicStroke(3)); // 테두리 두께 설정
 
-            if (CheckAnswer.check(clickPoint)){
-                points.add(clickPoint);
-                for (Point point : points) {
-                    g2.drawOval(point.x - 15, point.y - 15, 30, 30);
-                }
+            if (!checkAnswer.check(clickPoint)){    // 틀렸을 때
+//                g2.drawRect(points.getLast().x, points.getLast().y, 5, 5);
+                g2.drawLine(points.getLast().x - 15, points.getLast().y - 15,
+                        points.getLast().x + 15, points.getLast().y + 15);
+                g2.drawLine(points.getLast().x - 15, points.getLast().y + 15,
+                        points.getLast().x + 15, points.getLast().y - 15);
+                points.remove(points.getLast());
+            }
+            for (Point point : points) {
+                g2.drawOval(point.x - 15, point.y - 15, 30, 30);
             }
         }
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
     }
 
     public Point getClickPoint() {

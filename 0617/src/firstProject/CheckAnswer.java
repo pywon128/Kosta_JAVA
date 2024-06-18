@@ -17,7 +17,7 @@ public class CheckAnswer {
             )
     );
 
-    public static boolean check(Point userClick){
+    public boolean check(Point userClick){
         for (Point point : answer){
             if ((point.x+15 > userClick.x && point.x-15 < userClick.x)
                     && (point.y+15 > userClick.y && point.y-15 < userClick.y)){
