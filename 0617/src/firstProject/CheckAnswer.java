@@ -18,11 +18,14 @@ public class CheckAnswer {
     );
 
     public boolean check(Point userClick){
-        for (Point point : answer){
-            if ((point.x+15 > userClick.x && point.x-15 < userClick.x)
-                    && (point.y+15 > userClick.y && point.y-15 < userClick.y)){
-                answer.remove(point);
-                return true;
+        if (userClick.x >= 0){
+            for (Point point : answer){
+                System.out.println("체크메서드");
+                if ((point.x+15 > userClick.x && point.x-15 < userClick.x)
+                        && (point.y+15 > userClick.y && point.y-15 < userClick.y)){
+                    answer.remove(point);
+                    return true;
+                }
             }
         }
         return false;

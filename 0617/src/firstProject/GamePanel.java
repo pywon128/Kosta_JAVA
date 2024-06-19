@@ -26,8 +26,8 @@ public class GamePanel extends JPanel {
         add(imagesPanel, BorderLayout.CENTER);
         add(new InfoPanel(), BorderLayout.SOUTH);
 
-        while (!CheckAnswer.answer.isEmpty()){
-
-        }
+//        while (!CheckAnswer.answer.isEmpty()){
+//            System.out.println("while");
+//        }
     }
 }

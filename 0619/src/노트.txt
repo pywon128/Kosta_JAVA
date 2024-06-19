@@ -1,0 +1,405 @@
+<< 참조키(foreign key)의 설정 >>
+references 부모테이블(주식별자)
+
+create table newbook(
+    bookid number primary key,
+    bookname varchar2(30) not null,
+    publisher varchar2(30),
+    price number
+);
+
+create table newcustomer(
+    custid number primary key,
+    name varchar2(30),
+    addr varchar2(30),
+    phone varchar2(30)
+);
+
+create table neworders(
+    orderid number primary key,
+    custid number references newcustomer(custid),
+    bookid number references newbook(bookid),
+    saleprice number,
+    orderdate date
+);
+
+insert into newbook select bookid, bookname, publisher, price from book;
+insert into newcustomer select * from customer;
+
+ insert into neworders values(2,10,5,7000,sysdate);
+1행에 오류:
+ORA-02291: 무결성 제약조건(C##MADANG.SYS_C008376)이 위배되었습니다- 부모 키가 없습니다
+-> 추가하려는 고객번호 10번은 newcustomer 테이블에 없기 때문에 오류 발생
+
+newbook
+newcustomer
+neworders   의 부모는 newbook, newcustomer
+=> 참조하고 있는 자식테이블이 있으면 부모테이블을 삭제할 수 없음
+
+drop table newbook
+1행에 오류:
+ORA-02449: 외래 키에 의해 참조되는 고유/기본 키가 테이블에 있습니다
+
+** 참조키를 설정 할 대에는 반드시 부모테이블의 주식별자를 참조하도록 해야 합니다.
+create table newbook(
+    bookid number primary key,
+    bookname varchar2(30) not null,
+    publisher varchar2(30),
+    price number
+);
+create table newcustomer(
+    custid number primary key,
+    name varchar2(30),
+    addr varchar2(30),
+    phone varchar2(30)
+);
+create table neworders(
+    orderid number primary key,
+    custid number references newcustomer(bookname),
+    bookid number references newbook(name),
+    saleprice number,
+    orderdate date
+);
+3행에 오류:
+ORA-00904: "BOOKNAME": 부적합한 식별자
+=> 참조키로 설정하려는 컬럼은 반드시 부모테이블의 "주식별자"여야 함.
+
+<< 기본키와 참조키의 설정 >>
+- 컬럼레벨의 설정 : 컬럼을 적어 줄 대에 설정
+- 테이블레벨의 설정 : 컬럼들을 다 적어주고 맨 마지막에 키를 설정
+
+create table newbook(
+    bookid number primary key,
+    bookname varchar2(30) not null,
+    publisher varchar2(30),
+    price number
+);
+
+<< 테이블 레벨의 설정 >>
+create table newbook(
+    bookid number,
+    bookname varchar2(30) not null,
+    publisher varchar2(30),
+    price number,
+    primary key(bookid)
+);
+create table newcustomer(
+    custid number,
+    name varchar2(30),
+    addr varchar2(30),
+    phone varchar2(30),
+    primary key(custid)
+);
+create table neworders(
+    orderid number,
+    custid number,
+    bookid number,
+    saleprice number,
+    orderdate date,
+    primary key(orderid),
+    foreign key(custid) references newcustomer(custid),
+    foreign key(bookid) references newbook(bookid)
+);
+
+-> 개체무결성에 위배됩니다.
+	primary key 값이 중복 또는 null 일때
+
+-> 참조무결성에 위배됩니다
+	foreign key 로 설정한 컬럼의 값이 부모 테이블에 존재하지 않을 때(참조값이 없을 때)
+
+<< 두개이상의 컬럼이 합쳐져서 pk 설정하기 >>
+도서명과 출판사를 합쳐서 pk 설정하기
+
+create table newbook(
+    bookname varchar2(50),
+    publisher varchar2(20),
+    price number,
+    primary key(bookname, publisher)
+);
+insert into newbook values('자바', '코스타', 50000);
+insert into newbook values('자바', '한빛', 50000);
+    insert into newbook values('자바', '코스타', 50000);
+    1행에 오류:
+    ORA-00001: 무결성 제약 조건(C##MADANG.SYS_C008389)에 위배됩니다
+
+
+create table newcustomer(
+    custid number,
+    name varchar2(30),
+    addr varchar2(30),
+    phone varchar2(30),
+    primary key(custid)
+);
+
+연습) neworders 테이블을 만들기
+        주문번호를 pk, newbook의 pk를 참조키로 newcustomer의 pk를 참조키로 설정
+    create table neworders(
+        orderid number primary key,
+        bookname varchar2(50),
+        publisher varchar2(20),
+        custid number references newcustomer(custid),
+        saleprice number,
+        orderdate date,
+        foreign key(bookname, publisher) references newbook(bookname, publisher)
+    );
+
+neworders 에 제약 조건을 만족하는지 레코드를 추가
+    insert into neworders values(1,'자바', '한빛', 1, 50000, sysdate);
+    insert into neworders values(2,'자바', '한빛', 3, 55555, sysdate);  //무결성 제약조건이 위배되었습니다- 부모 키가 없습니다
+    insert into neworders values(3,'자바', '코스타', 1, 33333, sysdate);
+    insert into neworders values(2,'자바', '코스타', 2, 33333, sysdate);
+    insert into neworders values(3,'자바', '코스타1', 2, 33333, sysdate); // 무결성 제약 조건에 위배됩니다
+
+create table theater_location(
+    tlno number primary key,
+    tname varchar2(30),
+    tloc varchar2(30)
+);
+insert into theater_location values(1, '롯데', '잠실');
+insert into theater_location values(2, '메가', '강남');
+insert into theater_location values(3, 'CGV', '송파');
+
+create table theater(
+    tno number primary key check(tno between 1 and 10),
+    tlno number references theater_location(tlno),
+    moviename varchar2(30),
+    price number check (price between 0 and 20000),
+    allseat number
+);
+insert into theater values(1, 3, '쉬운영화', 5000, 55);
+insert into theater values(2, 2, '보통영화', 10000, 110);
+insert into theater values(3, 1, '어려운영화', 15000, 165);
+
+create table theater_customer(
+    tcno number primary key,
+    name varchar2(30),
+    adds varchar2(30)
+);
+insert into theater_customer values(4, '손님1', '강남');
+insert into theater_customer values(2, '손님2', '잠실');
+insert into theater_customer values(6, '손님3', '강남');
+
+create table reservation(
+    tlno number references theater_location(tlno),
+    tno number references theater(tno),
+    tcno number references theater_customer(tcno),
+    seatnumber number,
+    rdate date
+);
+insert into reservation values(3, 1, 4, 15, sysdate);
+insert into reservation values(3, 1, 4, 15, '2014/09/01');
+
+1) 모든 극장의 이름과 위치 출력
+    select * from theater_location;
+2) '잠실'에 있는 극장 출력
+    select tname from theater_location where tloc = '잠실';
+3) '잠실'에 사는 고객의 이름을 오름차순으로 출력
+    select name from theater_customer where adds = '잠실' order by name;
+4) 가격이 8000원 이하인 영화의 극장번호, 상영관번호, 영화제목 출력
+    select tl.tlno, tno, moviename from theater_location tl, theater t where tl.tlno = t.tlno and price <= 8000;
+5) 극장 위치와 고객의 주소가 같은 고객 출력
+    select name from theater_location tl, theater_customer tc where tl.tloc=tc.adds;
+6) 극장의 수는 몇개인지 출력
+    select count(tname) from theater_location;
+7) 상영되는 영화의 평균 가격은 얼마인가?
+    select avg(price) from theater;
+8) 2014년 9월 1일에 영화를 관람한 고객의 수는 얼마
+    select count(rdate) from reservation where rdate='2014/09/01';
+9) 'CGV' 극장에서 상영된 영화제목을 출력
+    select moviename from theater_location tl, theater t where tl.tlno = t.tlno and tl.tname='CGV';
+10)'CGV' 극장에서 영화를 본 고객의 이름을 출력
+    select name from theater_location tl, theater_customer tc, reservation r where tl.tlno = r.tlno and tc.tcno = r.tcno;
+11) 'CGV' 극장의 전체 수입을 출력
+    - 예약으로 부터 극장번호가 3번인 것 중에서 상영관번호별로 예약 건수를 조회
+        select tno, count(*)
+        from reservation
+        where tlno = 3
+        group by tno;
+
+        select tno, count(*)
+        from reservation
+        where tlno = (select tlno from theater_location where tname = 'CGV')
+        group by tno;
+
+        예약으로 부터 극장이름이 CGV인 것 중에서 상영관번호별로 예약건수와 영화가격을 조회
+        select tlno, tno, count(*)
+        from reservation r
+        where tlno = (select tlno from theater_location where tname = 'CGV')
+        group by tlno, tno;
+
+        select sum(cnt* (select price from theater b where a.tlno = b.tlno and a.tno = b.tno)) 가격
+        from(select tlno, tno, count(*) cnt
+        from reservation r
+        where tlno = (select tlno from theater_location where tname = 'CGV')
+        group by tlno, tno) a;
+
+12) 극장별 상영관 수를 출력
+    select (select tname from theater_location a where a.tlno = b.tlno) 극장이름, count(*)
+    from theater b
+    group by tlno;
+
+13) '잠실'에 있는 극장의 상영관 출력
+    select * from theater where tlno in (select tlno from theater_location where tloc = '잠실');
+
+14) 2014년 9월 1일의 극장별 평균 관람 고객수 출력
+    극장별관람수 / 극장별상영관수
+    select tlno, (select tname from theater_location a where a.tlno = b.tlno),
+    count(*)/count(distinct tno) avg from reservation b
+    where rdate = '2014/09/01'
+    group by tlno;
+
+15) 2014년 9월 1일에 가장 많은 고객이 관람한 영화를 출력
+    - 극장번호별로, 상영관번호별로 관람수를 출력
+    select tlno, tno, count(*)
+    from reservation
+    group by tlno, tno;         <- A
+
+    select max(count(*))
+    from reservation
+    group by tlno, tno;         <- B
+
+    A중에 cnt가 B인 것의 극장번호, 상영관 번호 구하기
+    select tlno, tno
+    from (select tlno, tno, count(*) cnt
+      from reservation
+      group by tlno, tno)
+    where cnt = (select max(count(*))
+     from reservation
+     group by tlno, tno);
+
+     select * from theater
+     where (tlno, tno = select(tlno, tno)
+     from (select tlno,
+
+16) 각 테이블에 데이터를 삽입하는 insert 문을 하나씩 실행
+    insert into theater_location values (4,'코스타','종로');
+    insert into theater values(4,1,'재미있는자바', 10000, 25);
+
+17) 영화의 가격을 10%씩 인상
+    update theater set price = price*1.1;
+
+DDL
+    create  테이블, 뷰, 프로시저, 트리거 .. 등의 개채 생성
+    alter   테이블구조를 변경
+    drop    테이블 삭제
+
+DML
+    insert 레코드의 생성
+    select 레코드의 조회
+    update 레코드의 수정
+    delete 레코드의 삭제
+
+<< 테이블 구조 변경 하기 >>
+    alter table 테이블명
+- 컬럼추가
+- 컬럼삭제
+- 컬럼 속성 변경
+
+<< 컬럼 추가 하기 >>
+alter table 테이블이름 add 컬럼이름 자료형;
+
+<< 컬럼 삭제 하기 >>
+alter table 테이블이름 drop column 컬럼이름;
+
+<< 컬럼 속성 수정하기 >>
+alter table 테이블이름 modify 컬럼이름 새로운자료형;
+
+create table newbook(
+    bookid number,
+    bookname varchar2(30),
+    publisher varchar2(30),
+    price number
+);
+
+INSERT INTO newbook VALUES(1,'자바','코스타',5000);
+
+연습) newbook 테이블에 varchar2(13)의 자료형을 가진 컬럼 isbn를 추가
+    alter table newbook add isbn varchar2(13) NOT NULL;
+        - 레코드가 이미 들어가 있는 상태에서 새로운 컬럼을 추가할 때 NOT NULL 을 사용하지 못함
+
+연습) newbook 테이블에 있는 isbn 컬럼의 자료형을 NUMBER 로 변경
+    ALTER TABLE newbook MODIFY isbn NUMBER;
+        -> 만약, 변경하려는 자료형에 맞지 않는 레코드가 이미 있다면 변경할 수 없음 [VARCHAR2(20) 값들어 있음 ->  NUMBER 안됨]
+
+연습) newbook 테이블의 isbn 컬럼을 삭제
+    ALTER TABLE newbook DROP COLUMN isbn;
+
+    INSERT INTO newbook VALUES(1,'잼는 잡', '코스타', 40000);
+    INSERT INTO newbook VALUES(3,'잼없는 잡ㅂㅂㅂㅂㅂㅂㅂㅂㅂㅂ', '코스타', 45000);
+
+    ALTER TABLE newbook MODIFY bookname VARCHAR2(45);
+
+연습) newbook 테이블의 bookname에 대하여 not null 설정
+    ALTER TABLE newbook MODIFY bookname VARCHAR2(50) NOT NULL;
+
+<< 이미 있는 테이블에 PK 설정하기 >>
+    ALTER TABLE 테이블이름 ADD PRIMARY KEY (컬럼[들]);
+
+연습) newbook 테이블의 bookid 에 대하여 PK 설정
+    ALTER TABLE newbook ADD PRIMARY KEY(bookid);
+    -> 이것을 위해서 bookid 가 중복된 값이 있거나 null 값이 있으면 불가능
+
+연습) newbook 테이블의 price에 대하여 1000원 이상이어야 하는 제약을 추가
+    ALTER TABLE newbook ADD CHECK( price >= 1000 );
+제약 : constraint
+    사용자가 설정한 제약의 정보를 갖고 있는 데이터사전
+    user_constraints
+
+     CONSTRAINT_NAME   NOT NULL VARCHAR2(128)   <- 제약이름
+     CONSTRAINT_TYPE   VARCHAR2(1)              <- 제약의 종류
+     TABLE_NAME        NOT NULL VARCHAR2(128)   <- 제약이 설정된 테이블 이름
+     STATUS            VARCHAR2(8)              <- 제약의 상태
+
+SELECT constraint_name, constraint_type, table_name, status FROM user_constraints;
+
+CONSTRAINT_NAME      CONSTRAINT TABLE_NAME STATUS
+-------------------- ---------- ---------- ----------
+...
+SYS_C008405          P          NEWBOOK    ENABLED
+
+연습) newbook 테이블에 설정된 제약정보를 조회
+    (테이블이름이 값으로 들어갈 때는 대문자로 처리)
+    SELECT constraint_name, constraint_type, table_name, status FROM user_constraints
+    WHERE table_name ='newbook'  <- 오류
+
+    SELECT constraint_name, constraint_type, table_name, status FROM user_constraints
+        WHERE table_name ='NEWBOOK';
+    => 데이터베이스 명령어 자체는 대소문자를 구별하지 않지만 테이블이름이 값으로 판별할 때는 대소문자를 구별해야 함
+        데이터 사전인 user_constraints에 테이블이름은 대문자로 들어감
+
+        CONSTRAINT_NAME      CONSTRAINT TABLE_NAME STATUS
+        -------------------- ---------- ---------- ----------
+        SYS_C008404          C          NEWBOOK    ENABLED
+        SYS_C008406          C          NEWBOOK    ENABLED
+        SYS_C008405          P          NEWBOOK    ENABLED
+
+<< 제약을 비활성화 시키기 >>
+    ALTER TABLE 테이블이름 DISABLE constraint 제약명;
+<< 제약을 활성화 시키기 >>
+    ALTER TABLE 테이블이름 ENABLE constraint 제약명;
+
+연습) newbook에 PK 제약을 비활성화 시키기
+    ALTER TABLE newbook DISABLE constraint SYS_C008405;
+
+    CONSTRAINT_NAME      CONSTRAINT TABLE_NAME STATUS
+    -------------------- ---------- ---------- ----------
+    SYS_C008404          C          NEWBOOK    ENABLED
+    SYS_C008406          C          NEWBOOK    ENABLED
+    SYS_C008405          P          NEWBOOK    DISABLED
+
+INSERT INTO newbook VALUES(3, '재미있다', '코슽', 1234);
+
+ALTER TABLE newbook ENABLE constraint SYS_C008405;
+-> ORA-02437: (C##MADANG.SYS_C008405)을 검증할 수 없습니다 - 잘못된 기본 키입니다
+    => INSERT 로 중복 값인 3 을 넣어서 안됨
+
+숙제) 극장별 예약건수, 총수익을 출력하는 프로그램을 작성
+
+
+
+
+
+
+
+
+

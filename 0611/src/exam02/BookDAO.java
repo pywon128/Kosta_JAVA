@@ -23,7 +23,6 @@ public class BookDAO {
                 + "where c.custid = o.custid and b.bookid = o.bookid "
                 + "and publisher = '" + publisher + "'";
 
-//        String sql = "select b.bookid, bookname, price, saleprice, orderdate, name, c.custid, phone from customer c, orders o, book b where c.custid = o.custid and b.bookid = o.bookid and publisher = '"+publisher+"'";
         try {
             Class.forName(DRIVER);
             conn = DriverManager.getConnection(URL, USERNAME, PASSWORD);

@@ -39,6 +39,7 @@ public class GameFrame extends JFrame {
                 closeMethod();
             }
         });
+
     }
 
     public static void closeMethod(){   // JFrame 종료 메서드
