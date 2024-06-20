@@ -1,0 +1,466 @@
+<< 테이블 구조 변경 >>
+ALTER TABLE 테이블 이름 ~
+
+~ 새로운 컬럼 추가
+    ALTER TABLE 테이블이름 ADD 컬럼명 자료형
+
+~ 필요없는 컬럼 삭제
+    ALTER TABLE 테이블이름 DROP COLUMN 컬럼이름
+
+~ 컬럼의 자료형
+    ALTER TABLE 테이블이름 MODIFY 컬럼이름 새로운자료형
+
+~ NOT NULL 설정
+    ALTER TABLE 테이블이름 MODIFY 컬럼이름 자료형 NOT NULL
+
+~ CHECK 설정
+    ALTER TABLE 테이블이름 ADD CHECK(조건)                       <- 오라클이 제약의 이름을 정해줌
+    ALTER TABLE 테이블이름 ADD CONSTRAINT 제약이랑 CHECK (조건)   <- 제약명 정하기
+
+~ PK 설정
+    ALTER TABLE 테이블이름 ADD PRIMARY KEY(컬럼[들])                  <- 오라클이 제약명을 정함
+    ALTER TABLE 테이블이름 ADD CONSTRAINT 제약명 PRIMARY KEY(컬럼[들]) <- 제약명 정하기
+
+~ FK 설정
+    ALTER TABLE 테이블이름 ADD FOREIGN KEY(컬럼[들]) REFERENCES 부모테이블(컬럼[들])
+    ALTER TABLE 테이블이름 ADD CONSTRAINT 제약명 FOREIGN KEY(컬럼[들]) REFERENCES 부모테이블(컬럼[들])
+
+<< 제약의 활성화 / 비활성화 >>
+    사용자가 만든 제약의 정보를 가지고 있는 데이터 사전
+    => user_constraints
+
+     CONSTRAINT_NAME      제약의 이름
+     CONSTRAINT_TYPE      제약의 유형
+     TABLE_NAME           제약이 설정된 테이블 이름 <- 테이블 이름이 대문자로 저장
+     SEARCH_CONDITION     제약의 상세정보
+     STATUS               제약의 상태
+
+제약을 비활성화 하기
+    ALTER TABLE 테이블이름 DISABLE CONSTRAINT 제약명;
+
+제약을 활성화 하기
+    ALTER TABLE 테이블이름 ENABLE CONSTRAINT 제약명;
+
+제약삭제
+    DROP CONSTRAINT 제약명;
+
+    SELECT CONSTRAINT_NAME, TABLE_NAME, CONSTRAINT_TYPE, SEARCH_CONDITION, STATUS
+    FROM USER_CONSTRAINTS WHERE TABLE_NAME = 'NEWBOOK';
+
+    ALTER TABLE newbook DROP CONSTRAINT SYS_C008406;
+
+CREATE TABLE DEPT(
+    DNO NUMBER PRIMARY KEY,
+    DNAME VARCHAR2(20),
+    DLOC VARCHAR2(20)
+);
+
+CREATE TABLE EMP(
+    ENO NUMBER PRIMARY KEY,
+    ENAME VARCHAR2(20),
+    DNO NUMBER REFERENCES DEPT(DNO)
+);
+
+INSERT 문의 형식
+INSERT INTO 테이블이름 VALUES(값1, 값2, ...);
+=> 테이블 이름과 동일하게 값을 나열해야 함
+
+INSERT INTO 테이블이름(컬럼1, 컬럼2,..) VALUES(값1, 값2)
+==> 나열한 컬럼의 순서와 동일한 순서로 값을 넣어야 한다.
+==> 나열된 칼럼이외의 컬럼들은 null이거나 default가 있어야 한다.
+
+연습) BOOK 테이블에 새로운 도서 '스포츠 의학'을 삽입하시오
+        스포츠 의학은 한솔의학서적에서 출간했으며 가격은 미정
+    INSERT INTO book VALUES(14, '스포츠 의학', NULL, '한솔의학서적');
+
+    INSERT INTO book(bookid, bookname, publisher) VALUES(15,'스포츠 의학', '한솔의학서적');
+
+SELECT tl.TNAME, COUNT(r.TCNO), SUM(t.PRICE)
+FROM THEATER_LOCATION tl, THEATER t, RESERVATION r
+WHERE tl.TLNO = t.tlno AND t.TNO = r.TNO AND tl.TNAME = 'CGV'
+GROUP BY tl.TNAME
+ORDER BY tl.TNAME;
+
+<< 이미 있는 테이블의 구조와 동일한 테이블 만들기 >>
+    CREATE TABLE newbook AS SELECT * FROM book;
+        => book 테이블의 레코드를 모두 조회하여 동일한 컬럼과 레코드를 갖는 테이블 생성
+
+    CREATE TABLE newbook AS SELECT * FROM book WHERE 1=2;
+        => 절대로 만족하지 않는 조건을 주면 레코드는 추가하지 않고 테이블의 구조만 똑같이 생성
+
+<< SELECT 한 결과를 INSERT 하기 >>
+INSERT INTO 테이블명 SELECT ~
+
+연습) book 테이블로부터 '굿스포츠'의 도서만 조회하여 newbook에 추가 하기
+    INSERT INTO newbook SELECT * FROM book WHERE publisher='굿스포츠';
+
+<< UPDATE 문이 형식 >>
+UPDATE 테이블이름 SET 컬럼1=값1, 컬럼2=값2, ... [WHERE 조건식]
+
+값이 들어가는 곳과 WHERE 절에 서브쿼리가 올 수 있음
+
+연습) CUSTOMER 테이블에서 고객번호가 5번인 고객의 주소를 '대한민국 부산'으로 변경
+    UPDATE CUSTOMER SET ADDRESS = '대한민국 부산' WHERE CUSTID = 5;
+
+연습) CUSTOMER 테이블에서 박세리의 주소를 김연아의 주소와 동일하게 변경
+    UPDATE CUSTOMER SET ADDRESS = (SELECT ADDRESS FROM CUSTOMER WHERE NAME='김연아') WHERE NAME='박세리';
+
+<< DELETE 문의 형식 >>
+DELETE 테이블명 [WHERE 조건식]
+
+연습) 박지성 고객의 주문내역을 모두 삭제
+    DELETE ORDERS WHERE CUSTID = (SELECT CUSTID FROM CUSTOMER WHERE NAME='박지성');
+
+연습) '굿스포츠' 출판사의 모든 주문내역을 삭제
+    DELETE ORDERS WHERE BOOKID IN (SELECT BOOKID FROM BOOK WHERE PUBLISHER='굿스포츠');
+
+<< 수정 >>
+UPDATE => 자료(레코드)를 수정
+ALTER => 테이블 구조를 수정
+
+<< 삭제 >>
+DELETE => 자료(레코드)를 수정
+DROP => 테이블을 삭제
+
+명령1
+명령2
+명령3
+COMMIT;
+명령4
+명령5
+ROLLBACK    <- 명령1,2,3 은 이미 반영이 되어서 되돌릴 수 없고 명령 4,5 가 취소됩니다.
+
+명령1
+명령2
+명령3
+CREATE ~ <- DDL은 자동 커밋이기 때문에 위에 작성한 모든 DML(명령1,2,3)이 자동 커밋됨
+
+연습) 모든 주문에 대하여 주문번호, 도서번호, 도서가격과 판매가격을 차이를 출력
+    SELECT ORDERID, PRICE, SALEPRICE, PRICE-SALEPRICE
+    FROM BOOK B, ORDERS O
+    WHERE B.BOOKID = O.BOOKID;
+
+    SELECT ORDERID, PRICE, SALEPRICE, ABS(PRICE-SALEPRICE)
+    FROM BOOK B, ORDERS O
+    WHERE B.BOOKID = O.BOOKID;
+
+실습을 위하여 오라클이 제공하는 가상의 테이블 DUAL을 이용하여 함수의 동작방식을 알아보기
+    < ABS 절대값 >
+    SELECT ABS(28) FROM DUAL;
+    SELECT ABS(-28) FROM DUAL;
+
+    < CEIL >
+    올림수를 취해 주는 함수
+    SELECT CEIL(10.4) FROM DUAL;
+    SELECT CEIL(-10.5) FROM DUAL;
+
+    < FLOOR >
+    버림수를 취해 주는 함수
+    SELECT FLOOR(11.9) FROM DUAL;
+
+    < ROUND >
+    반올림을 취해 주는 함수
+    SELECT ROUND(10.4) FROM DUAL;   <- 10
+    SELECT ROUND(10.5) FROM DUAL;   <- 11
+    SELECT ROUND(56.734, 0) FROM DUAL;  <- 정수부만 출력
+    SELECT ROUND(56.734, 1) FROM DUAL;  <- 소수 첫째 자리까지 출력
+
+연습) 개발팀에 근무하는 모든 직원들의 사원번호, 부서명, 연봉을 출력, 연봉은 100의자리 까지만 출력
+        SELECT eno, d.dname, ename, round((salary+nvl(comm,0))*12,-2)
+        from emp e, dept d
+        where e.dno=d.dno
+        and d.dname like '개발%';
+
+<< 문자 함수 >>
+    lower => 소문자로 변환
+    upper => 대문자로 변환
+
+    insert into customer values(6,'Tiger', null, null);
+    insert into customer values(7,'tiger', null, null);
+    insert into customer values(8,'TIGER', null, null);
+
+    select lower(name) from customer;
+
+연습) 고객의 이름이 tiger(대소문자 구분없이)인 사람이 모두 몇명인지 조회
+    select count(name) from customer where lower(name)='tiger';
+
+length => 문자열의 길이
+ltrim => 왼쪽 공백을 제거
+rtrim => 오른쪽 공백을 제거
+trim => 양쪽 공백을 제거
+                                           길이
+select length('hello') from dual;           5
+select length('  hello') from dual;         7
+select length('  hello  ')from dual;        9
+select length(ltrim('  hello')) from dual;  5
+select length(trim('  hello  ')) from dual; 5
+
+insert into customer values(9,'  tiger', null, null);
+insert into customer values(10,'  tiger   ', null, null);
+insert into customer values(11,'TIGER   ', null, null);
+
+연습) 이름이 tiger인 모든 고객을 출력    (대소문자 구별없이, 이름의 공백을 제거하고)
+    select * from customer where lower(trim(name))='tiger';
+
+select bookname, length(bookname) from book;
+연습) 도서명의 글자 길이가 7자 이상인 도서의 정보를 출력
+    select bookname from book where length(bookname) >= 7;
+
+글자 바이트 수 : lengthb
+select lengthb('홍') from dual;
+
+replace : 문자열을 변경
+select '재미있는 자바' from dual;
+select replace(데이터, 원래문자, 바꿀문자) from dual;
+select replace('재미있는 잡아', '재미있는', '신나는') from dual;
+
+도서번호, 도서명, 출판사, 가격을 출력
+    도서명의 '야구'를 모두 '농구'로 변환하여 출력
+select bookid, replace(bookname, '야구', '농구') bookname, publisher, price from book;
+
+substr  : 문자열의 일부분을 잘라주는 함수
+substr(문자열, 시작위치, 개수)
+
+select 'hello' from dual;
+select substr('hello', 1, 1) from dual;
+select substr('hello', 1, 2) from dual;
+select substr('hello', 2, 2) from dual;
+=> 인덱스가 1부터 시작
+
+emp에 컬럼 추가
+주민번호 jumin varchar2(14)
+이메일 email varchar2(50)
+
+alter table emp add jumin varchar2(14);
+alter table emp add email varchar2(50);
+
+update emp set jumin = '901010-1234567', email = 'edj19877@gmail.com' where ename = '이동준';
+update emp set jumin='980728-1234567', email = 'goodstar7369@naver.com'  where ename = '박성빈';
+update emp set jumin ='021010-4123456', email = 'dladbsk674@naver.com' where eno = 1003;
+update emp set jumin = '970217-1111111', email = 'ghdtjrdud38@naver.conm' where ename = '홍석영';
+update emp set jumin = '920511-1234566', email = 'zxzz8014@naver.com' where eno = 1006;
+update emp set email='principle950@naver.com', jumin='950830-2000000' where ename = '최모래';
+update emp set email='uhyeonjin0619@gmail.com', jumin='960619-1234567' where ename='유현진';
+update emp set jumin = '971223-2000000', email = 'qordpsem@gmail.com' where eno = 1008;
+update emp set jumin='941104-1234567', email='pjsu94@naver.com' where eno = 1009;
+update emp set jumin = '991013-2222222', email = '700eeu@gmail.com' where ename = '김예은';
+update emp set jumin='970128-1111111', email='dlwodnjs0128@naver.com' where eno=1011;
+update emp set jumin = '930304-1023412' , email = 'whdudgms123@naver.com' where ename= '조영흔';
+UPDATE emp SET jumin = '980105-1212331', email = '85356271a@gmail.com' WHERE eno = 1014;
+UPDATE EMP SET JUMIN = '010205-3123456', EMAIL = 'rhdgmltkd88@gmail.com' WHERE ENO = 1015;
+
+연습) 개발팀에 근무하는 남성직원들에게 특별상여금을 지급하려고 합니다. 상여금은 연봉의 150% 입니다.
+            대상자의 사원번호, 이름, 상여금, 관리자명, 주민번호를 출력
+    select e.eno 사원번호, e.ename, (e.salary*12)*1.5 상여금, m.ename 관리자, e.jumin 주민번호
+    from emp e, emp m, dept d
+    where e.mgr = m.eno and d.dno = e.dno
+    and d.dname like '개발%'
+    and (e.jumin like '%-1%' or e.jumin like '%-3%');
+
+    select e.eno 사원번호, e.ename, (e.salary*12)*1.5 상여금, m.ename 관리자, e.jumin 주민번호
+    from emp e, emp m, dept d
+    where e.mgr = m.eno and d.dno = e.dno
+    and d.dname like '개발%'
+    and substr(e.jumin,8,1) in (1,3);
+
+    select e.eno 사원번호, e.ename, (e.salary*12)*1.5 상여금,
+    (select ename from emp m where e.mgr = m.eno) 관리자, e.jumin 주민번호
+    from emp e, dept d
+    where d.dno = e.dno
+    and d.dname like '개발%'
+    and substr(e.jumin,8,1) in (1,3);
+
+    개발팀에 근무하는 사원번호
+    SELECT eno FROM emp WHERE dno IN (SELECT dno FROM dept WHERE dname like '개발%');
+
+    개발팀에 근무하는 남자 사원번호
+    SELECT eno FROM emp WHERE dno IN (SELECT dno FROM dept WHERE dname like '개발%')
+    AND SUBSTR(jumin, 8, 1) IN (1,3);
+
+    개발팀에 근무하는 남자 사원번호, 이름, 상여금, 주민번호
+    SELECT eno, ename, ((salary+nvl(comm, 0))*12)*1.5 상여금,
+    ( SELECT ename FROM emp m WHERE e.mgr = m.eno), jumin
+    FROM emp e WHERE dno IN (SELECT dno FROM dept WHERE dname like '개발%')
+        AND SUBSTR(jumin, 8, 1) IN (1,3);
+
+instr : 해당 문자(열)이 있는 맨처음 나오는 위치를 알려줌
+
+SELECT INSTR('HELLO', 'L') FROM DUAL;
+INSTR('HELLO','L')
+------------------
+                 3
+
+연습) 모든직원의 사원번호, 주민번호, 아이디를 출력 / 주민번호는 생년월일과 성별까지만 출력
+   SELECT eno, SUBSTR(jumin,1 ,INSTR(jumin,'-')+1) jumin, SUBSTR(email, 1, INSTR(EMAIL,'@')-1) email FROM emp;
+
+lpad : 왼쪽의 공백을 특정문자로 채움
+    lpad (문자열, 자리수, 채울문자)
+        문자열을 자리수만큼 잡아서 출력하되, 왼쪽 빈칸을 채울문자로 채워줌
+
+rpad : 오른쪽 공백을 특정문자로 채움
+    rpad (문자열, 자리수, 채울문자)
+        문자열을 자리수만큼 잡아서 출력하되, 오른쪽 빈칸을 채울만자로 채워줌
+
+SELECT lpad('HELLO',10,'*') FROM DUAL;
+LPAD('HELLO',10,'*')
+--------------------
+*****HELLO
+
+2021년 01월 01일 이전에 입사한 모든 남자 직원들에게 특별상여금을 지급하려고 한다. 특별상여금은 연봉의 200% 이고
+    해당 직원의 사원번호, 사원명, 관리자명, 상여금, 주민번호, 아이디, 입사일을 출력
+        주민번호는 14자리를 잡아서 출력하되, 생년월일 성별까지만 출력하고 오른쪽 빈칸은 *로 출력,
+            상여금은 10의 자리에서 반올림하여 출력하고, 10자리를 잡아서 출력하되 앞의 빈칸은 0으로 채움
+
+SELECT eno, ename,
+(SELECT ename FROM emp m WHERE e.mgr = m.eno) MANAGER,
+LPAD(ROUND(((salary+comm)*12)*2, -1),10,0) COMM,
+RPAD(SUBSTR(jumin,1,INSTR(jumin,'-')+1), 14, '*') JUMIN,
+SUBSTR(email,1,INSTR(email,'@')-1) EMAIL, hiredate
+FROM emp e
+WHERE SUBSTR(jumin, 8, 1) IN ('1','3')
+AND HIREDATE < '2021/01/01';
+
+<< 날짜, 시간의 함수 >>
+sysdate     오늘 날짜, 시간알려줌
+SELECT sysdate FROM DUAL;   //오늘 날짜
+
+
+to_date(문자, 형식)
+    => 문자를 날짜로 변경
+
+to_char(날짜, 형식)
+    => 날짜를 문자로 변경
+
+<< 형식에 올 수 있는 것 들 >>
+'yyyy'    연도4자리
+'yy'      연도2자리
+'MM'      월
+'DD'      일
+'HH'      시
+'MI'      분
+'SS'      초
+
+연습) 오늘의 연도만 출력
+    SELECT TO_CHAR(sysdate, 'yyyy') FROM DUAL;
+
+연습) 현재의 년,월,일,시,분,초 를 출력
+    SELECT TO_CHAR(sysdate, 'YYYY/MM/DD/HH:MI:SS') FROM DUAL;
+
+연습) 2020년도에 입사한 모든 직원들의 이름,관리자명, 부서명, 입사일, 주민번호를 출력
+        주민번호는 14자리를 잡아서 성별까지만 출력하고 오른쪽 빈칸은 *로 채움
+    SELECT ename, (SELECT ename FROM emp m WHERE e.mgr = m.eno) MANAGER, dname, hiredate,
+    RPAD(SUBSTR(jumin,1,INSTR(jumin,'-')+1),14,'*') JUMIN
+    FROM emp e, dept d
+    WHERE e.dno = d.dno
+    AND TO_CHAR(hiredate, 'YYYY')='2020';
+
+연습) 6월달에 입사한 모든 직원들의 정보를 출력
+    SELECT * FROM emp
+    WHERE TO_CHAR(hiredate, 'MM')='06';
+
+연습) 모든 직원의 주민번호 앞자리 6자리를 출력
+    SELECT SUBSTR(jumin,1,6) FROM emp;
+    SELECT TO_DATE(SUBSTR(jumin,1,6), 'YYMMDD') FROM emp;
+
+    SELECT TO_CHAR(SYSDATE, 'YYYY')-TO_CHAR(TO_DATE('021010', 'YYMMDD'), 'YYYY') YYYY FROM DUAL;
+
+연습) 모든직원들의 사원번호, 이름, 주민번호, 나이를 출력
+    SELECT eno, ename, jumin, TO_CHAR(SYSDATE, 'YYYY')-TO_CHAR(TO_DATE(SUBSTR(jumin,1,6),'YYMMDD'),'YYYY') YYYY FROM emp;
+      ENO ENAME      JUMIN                YYYY
+    ----- ---------- -------------- ----------
+     1000 변시우
+     1001 이동준     901010-1234567        -66
+     1002 박성빈     980728-1234567        -74
+     1003 임유나     021010-4123456         22
+     1004 홍석영     970217-1111111        -73
+     1005 최모래     950830-2000000        -71
+     1006 유요한     920511-1234566        -68
+     1007 유현진     960619-1234567        -72
+     1008 박규희     971223-2000000        -73
+     1009 박준수     941104-1234567        -70
+     1010 김예은     991013-2222222        -75
+     1011 이재원     970128-1111111        -73
+     1012 조영흔     930304-1023412        -69
+     1013 강동균
+     1014 장동건     980105-1212331        -74
+     1015 공희상     010205-3123456         23
+     1016 최가은
+     2000 홍길동
+
+     주민번호의 앞의 2자리만 잘라옴
+     SELECT SUBSTR(jumin, 1,2) FROM emp;
+
+     여기에 앞에다가 '19' 글자를 연결
+     SELECT CONCAT('a', 'b') FROM DUAL;
+     SELECT CONCAT('19', SUBSTR(jumin,1,2)) FROM emp WHERE jumin IS NOT NULL;
+
+     오늘 날짜의 연도에서 출생연도를 뺀다.
+     SELECT TO_CHAR(sysdate, 'YYYY') - CONCAT('19', SUBSTR(jumin,1,2)) AGE FROM emp WHERE jumin IS NOT NULL;
+            AGE
+     ----------
+             34
+             26
+            122
+             27
+             29
+             32
+             28
+             27
+             30
+             25
+             27
+             31
+             26
+            123
+    2000년 이후의 출생자는 나이가 이상함
+
+    SELECT eno, ename, jumin,
+    TO_CHAR(sysdate, 'YYYY') -
+    CASE
+    when substr(jumin,8,1) IN ('1','2') then CONCAT('19', SUBSTR(jumin,1,2))
+    when substr(jumin,8,1) IN ('3','4') then CONCAT('20', SUBSTR(jumin,1,2))
+    END
+    AS AGE
+    FROM EMP WHERE jumin IS NOT NULL;
+
+연습) 나이가 28살 이상인 모든 직원의 정보를 출력
+    SELECT eno, ename,
+        TO_CHAR(sysdate, 'YYYY') -
+        CASE
+        when substr(jumin,8,1) IN ('1','2') then CONCAT('19', SUBSTR(jumin,1,2))
+        when substr(jumin,8,1) IN ('3','4') then CONCAT('20', SUBSTR(jumin,1,2))
+        END
+        AS AGE
+        FROM EMP WHERE jumin IS NOT NULL;       <= A
+
+        A로 부터 AGE가 27살 이상인 사원번호를 출력
+        SELECT eno, ename FROM( A ) WHERE AGE >= 27;
+
+        SELECT eno, ename FROM(
+                SELECT eno, ename,
+                TO_CHAR(sysdate, 'YYYY') -
+                CASE
+                when substr(jumin,8,1) IN ('1','2') then CONCAT('19', SUBSTR(jumin,1,2))
+                when substr(jumin,8,1) IN ('3','4') then CONCAT('20', SUBSTR(jumin,1,2))
+                END
+                AS AGE
+                FROM EMP WHERE jumin IS NOT NULL
+        ) WHERE AGE >= 27;
+
+add_months(날짜, 숫자)
+    => 날짜에 해당 숫자 만큼 달을 더 해 줌
+
+SELECT add_months(sysdate, 6) FROM DUAL;
+
+연습) 개발팀에 근무하는 모든 남자직원들은 입사일로 부터 1개월이내에 채용신체검사서를 제출해 합니다.
+        대상자의 사원번호, 사원이름, 관리자명, 입사일, 마감일을 출력
+            마감일 순으로 출력하고, 동일할 때에는 사원이름 순으로 출력
+    SELECT eno, ename, (SELECT m.ename FROM emp m WHERE e.mgr = m.eno) 관리자,
+    		hiredate, add_months(hiredate, 1) 마감일
+    FROM emp e
+    WHERE dno in (SELECT dno FROM dept WHERE dname LIKE '개발%')
+    AND substr(jumin, 8, 1) in ('1','3')
+    ORDER BY 마감일, ename;
+
+
+
