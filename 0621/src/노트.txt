@@ -1,0 +1,606 @@
+months_between(날짜1, 날짜2);
+=> 두 날짜 사이의 개월수를 반환
+=> 날짜1이 더 최근의 날짜이어야 함
+
+'2002/10/10'
+
+select months_between(sysdate, to_date('2002/10/10'))from dual;
+
+연습) 근무 개월수가 60개월 이상인 직원들에게 특별휴가를 주려고 합니다.
+        대상자의 사원번호, 사원이름, 부서명, 입사일, 근무개월, 주민번호를 출력
+            주민번호는 14자리를 잡아서 출력하되, 성별까지만 출력하고 오른쪽 6자리는 *로 표시
+                근무 개월수가 높은 순으로 출력하고 동일할 때에는 이름순으로 출력
+    select eno, ename, dname, hiredate,
+    round(months_between(sysdate, to_date(hiredate)),-1) service,
+    RPAD(SUBSTR(jumin,1,INSTR(jumin,'-')+1), 14, '*') JUMIN
+    from emp e, dept d
+    where e.dno = d.dno
+    and months_between(sysdate, to_date(hiredate)) >= 60
+    order by service desc, ename;
+
+    select eno, ename, (select dname from dept d where e.dno = d.dno),
+    hiredate,
+    round(months_between(sysdate, hiredate)) 근무개월,
+    rpad(substr(jumin,1,8),14,'*') jumin
+    from emp e
+    where months_between(sysdate, hiredate) >= 60
+    order by 근무개월 desc, ename;
+
+ << null에 대한 처리 >>
+    => 값이 정해 지지 않은 상태를 null 이라고 함
+    => null인 상태에서는 어떠한 연산이나 함수를 사용할 수 없음
+    => null인지 판별하기 위해서는 is null 연산자를 이용
+    => null이 아닌지 판별하기 위해서는 is not null 연산자를 사용
+    => 해당 레코드가 없을 때, count를 제외한 집계함수의 결과는 null
+    => null인 경우 다른값으로 대체 하기 위하여 nvl함수를 이용
+            nvl(컬럼, 값)
+
+create table test(
+    title varchar2(20),
+    cnt number
+);
+
+select max(cnt) from test;
+select min(cnt) from test;
+select sum(cnt) from test;
+select avg(cnt) from test;
+select count(cnt) from test;
+    => count 빼고 다 null
+
+<< 시퀀스 >>
+다른 레코드와 구별할 순번을 위하여
+1부터 1씩 차례로 증가하는 값을 위하여 사용
+
+<< 시퀀스 만들기 >>
+create sequence 시퀀스 이름 [start with 값 increment by 값 maxvalue 값]
+=> 시작값, 증감값을 생략하면 1
+=> 최대값을 생략하면 시스템이 허용하는데 까지 발행할 수 있음
+
+<< 시퀀스 사용하기 >>
+시퀀스이름.nextval
+
+create table board(
+    no number primary key,
+    title varchar2(50),
+    writer varchar2(20),
+    content varchar2(3000),
+    regdate date
+);
+
+create sequence seq_board start with 1 increment by 1;
+
+insert into board values(seq_board.nextval, '금요일', '변시우', '금요일 입니다', sysdate);
+insert into board values(seq_board.nextval, '프로젝트', '임유나', '화이팅 합시다', sysdate);
+
+insert into board values(seq_board.nextval, '감기', 'ㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁ', '감기 조심하세요');
+1행에 오류:
+ORA-00947: 값의 수가 충분하지 않습니다
+=> insert는 되지 않지만 시퀀스는 새로운 번호가 발행됨
+
+insert into board values(seq_board.nextval, '점심', '이재원', '뭐 먹어요', sysdate);
+create sequence seq_board;
+
+=> 시퀀스는 새로운 번호를 발행할 수 있어서 순서대로 번호가 들어가지 않을 수 있음,
+    순서대로 번호를 매겨야 한다면 프로그램으로 처리하는게 좋음
+        max 함수를 사용하여 +1 한다음 그것을 새로운 번호로 적용
+
+rownum
+    => select 문으로 조회한 결과에 대하여 차례대로 행번호를 붙이기 위해 사용하는 속성입니다.
+
+연습) 개발팀에 근무하는 모든 직원들의 사원번호, 이름을 출력
+        출력결과에 행번호를 붙여서 출력
+select rownum, eno, ename
+from emp e, dept d
+where e.dno = d.dno
+and dname like '개발%';
+
+연습) '박지성' 고객이 주문한 도서이름과 가격을 행번호를 붙여서 출력
+    select rownum, bookname, saleprice
+    from customer c, orders o, book b
+    where c.custid = o.custid and b.bookid = o.bookid
+    and c.name = '박지성';
+
+    select rownum, (select bookname from book b where b.bookid = o.bookid) bookname, saleprice
+    from orders o
+    where custid in (select custid from customer c where name='박지성');
+
+    select rownum, bookname, price
+    from book
+    where bookid in (select bookid from orders where custid = (
+        select custid from customer where name = '박지성'
+    ));
+
+연습) '박지성' 고객이 주문한 도서이름과 가격을 행번호를 붙여서 출력하기 ( 2권만 출력 )
+    select rownum, bookname, price
+        from book
+        where bookid in (select bookid from orders where custid = (
+            select custid from customer where name = '박지성'
+        ))
+        and rownum <= 2;
+
+연습) 가장 비싼 도서 3권을 출력
+    select * from book where price is not null order by price desc;
+
+    select rownum, bookid, bookname, price, publisher   다
+    from book                                           가
+    where price is not null and rownum <= 3             나
+    order by price desc;                                라
+
+    select rownum, b.*
+    from (select * from book order by price desc) b
+    where price is not null and rownum <= 3;
+
+연습) 가격이 높은 순으로 3~5번째 사이의 도서를 출력
+    select rownum, b.*
+    from (select * from book order by price desc) b
+    where price is not null and rownum between 3 and 5;  <- 안됨
+
+    조회한 결과(가상의 테이블)에 행번호인 rownum을 붙여서 앞에서 부터 순차적으로 가지고 오는 것은 됨
+    그러나 중간에 있는 일부분을 가지고 오는 것은 불가능
+    일부분을 가지고 오려면 행번호 붙인것을 다시 from 절에 서브쿼리로 넣어야 됨
+
+    select * from book where price is not null order by price desc;   <- A
+
+    select rownum n, b.*
+    from (A) b              <- B
+
+    select b.*
+    from (B) where n between 3 and 5;
+
+    select bookid, bookname, publisher, price
+    from (select rownum n, bookid, bookname, publisher, price
+        from (select * from book where price is not null order by price desc) b )
+    where n between 3 and 5;
+
+    정렬한 결과를 서브쿼리로 하여 행번호를 붙여서 앞에서 부터 일부분을 가지고 올 수 있음
+
+연습) '개발'팀에 근무하는 직책이 '사원'인 직원들 중에 실수령액이 가장 높은 직원 2명에 대한
+        사원번호, 사원명, 실수령액, 부서번호, 부서명, 관리자명을 행번호를 붙여 출력
+    select rownum, eno, ename, salary+nvl(comm,0) 실수령액,
+    d.dno, d.dname, (select ename from emp m where e.mgr=m.eno) 관리자명
+    from (select * from emp e where salary is not null order by salary+nvl(comm,0) desc) e, dept d
+    where e.dno = d.dno
+    and dname like '개발%'
+    and job = '사원'
+    and rownum <= 2;
+
+연습) 판매량이 가장 높은 두권의 도서 정보를 출력
+    select rownum, bookname, price, publisher, (select count(o.bookid) from orders o group by o.bookid order by count(o.bookid) desc) cnt
+    from book b
+    where rownum <=2
+    group by b.bookid;
+
+    select count(bookid) from orders group by bookid order by count(bookid) desc;
+
+    orders 테이블로 부터 도서번호 별로 판매건수를 판매건수 순으로 출력
+    select bookid, count(*) cnt from orders group by bookid order by cnt desc;      <= A
+
+    - A의 결과에 행번호를 붙여서 행번호가 2 이하인 레코드를 조회
+    select rownum, a.*
+    from (A) where rownum <= 2;
+
+    select bookid
+    from (select bookid, count(*) cnt from orders group by bookid order by cnt desc)
+    where rownum <= 2;          <=B
+
+    - book 테이블로 부터 도서번호가 B에 해당하는 도서의 정보를 조회
+    select * from book
+    where bookid in (B)
+
+    select * from book
+    where bookid in (select bookid
+                     from (select bookid, count(*) cnt from orders group by bookid order by cnt desc)
+                     where rownum <= 2);
+
+
+    BOOKID        CNT
+    ------ ----------
+         4          3
+        10          2
+         8          2
+         3          2
+         2          1
+         6          1
+         5          1
+         1          1
+         7          1
+         판매량 순으로 정렬했을 때에 2번째 판매량은 2권입니다.
+         2번째 판매량 보다 크거나 같은 모든 도서를 출력하도록 sql 작성
+
+    select * from book
+    where bookid in (select bookid
+                     from (select bookid, count(*) cnt from orders group by bookid order by cnt desc)
+                     where cnt >= (select count(*) cnt from orders where rownum=2 group by bookid order by cnt desc));
+
+    -도서번호별로 판매량을 출력
+    select bookid, count(*) cnt
+    from orders
+    group by bookid
+    order by cnt desc;      <= A
+
+    - A의 결과에 행번호를 붙여서 2번째 행의 cnt를 출력
+    select cnt from( A ) where rownum <= 2;     <= 가능
+    select cnt from( A ) where rownum =2 ;      <- 불가능
+
+    - 정렬한 것에다가 행번호를 붙여서 다시 서브쿼리로 만들어야 함
+    select rownum, b.* from ( A )
+
+    select rownum, b.* from (select bookid, count(*) cnt
+                             from orders
+                             group by bookid
+                             order by cnt desc) b
+                             where rownum =2;
+
+    select cnt from (select rownum n, b.*
+                         from (select bookid, count(*) cnt from orders group by bookid order by cnt desc) b)
+                         where n=2;             <= D
+                    CNT
+             ----------
+                      2
+                판매량 순으로 전렬했을 때 2번째 행에 있는 판매량
+    도서번호별로 판매량중에서 판매량이 D보다 크거나 같은 도서번호를 조회
+    select bookid from (A) where cnt>=(D)
+
+    select bookid from (select bookid, count(*) cnt
+                        from orders
+                        group by bookid
+                        order by cnt desc)
+                                where cnt>=(select cnt from (select rownum n, b.*
+                                             from (select bookid, count(*) cnt from orders group by bookid order by cnt desc) b)
+                                             where n=2);        <= E
+                    BOOKID
+                    ------
+                         4
+                        10
+                         3
+                         8
+    book 테이블로 부터 bookid가 E에 해당하는 도서정보를 조회
+    select * from book
+    where bookid in
+    (select bookid
+    from (select bookid, count(*) cnt
+            from orders
+            group by bookid
+            order by cnt desc
+            ) where cnt>=(select cnt from (select rownum n, b.*
+                                         from (select bookid, count(*) cnt from orders group by bookid order by cnt desc) b)
+                                         where n=2));
+
+    연습) 실수령액이 높은 순으로 하였을 때 5~10번째 직원의 이름을 출력
+        SELECT ENAME, SALARY+NVL(COMM,0) SALARY
+        FROM EMP
+        ORDER BY SALARY DESC;
+
+        SELECT ENAME
+        FROM (SELECT ROWNUM N, ENAME
+              FROM (SELECT ENAME, SALARY+NVL(COMM,0) SALARY
+                FROM EMP
+                ORDER BY SALARY DESC) S)
+        WHERE N BETWEEN 5 AND 10;
+
+    서브쿼리
+        => SQL문 안에 포함되는 또 다른 SQL문을 말함
+
+    서브쿼리의 위치
+        - SELECT 절  스칼라 서브쿼리
+        - FROM 절    인라인 뷰
+        - WHERE 절   중첩쿼리
+
+    < 스칼라 서브쿼리 >
+        SELECT 절에 컬럼이름 오는 곳에 사용되는 서브쿼리를 말함
+            단일행이 오도록 표현해야 함
+            ( 메인쿼리와 서브쿼리의 조건식 필요함 => 상관서브쿼리 )
+
+    연습) 고객별 고객아이디, 이름, 총주문금액을 출력
+        SELECT custid
+        , (SELECT name FROM customer c WHERE c.custid = o.custid) name
+        , SUM(saleprice)
+        FROM orders o
+        group by custid;
+
+    연습) 스칼라서브쿼리를 이용하여 도서명별 판매건수를 출력
+        SELECT BOOKNAME, (SELECT COUNT(*) FROM ORDERS o WHERE b.BOOKID = o.BOOKID) CNT
+        FROM BOOK b;
+
+        SELECT (SELECT BOOKNAME FROM BOOK b WHERE o.BOOKID = b.BOOKID) BOOKNAME, COUNT(*) CNT
+        FROM ORDERS o
+        GROUP BY BOOKID;
+
+    연습) 스칼라서브쿼리를 이용하여 부서별로 근무자의 수, 평균급여, 최고급여를 출력
+        SELECT (SELECT DNO FROM DEPT d WHERE d.DNO = e.DNO) 부서명
+        , COUNT(*) "근무자 수", AVG(SALARY) 평균급여
+        , MAX(SALARY) 최고급여
+        FROM EMP e
+        GROUP BY DNO;
+
+        << update 문에 사용되는 스칼라 서브쿼리 >>
+        UPDATE 테이블명 SET 컬럼명 = 값 [WHERE ~]
+        UPDATE 테이블명 SET 컬럼명 = (SELECT ~) [WHERE ~]
+
+        자료(레코드)의 수정 : UPDATE
+        테이블 구조 수정   : ALTER
+
+        실습을 위하여 ORDERS 테이블에 BOOKNAME 컬럼을 추가
+        ALTER TABLE ORDERS ADD BOOKNAME VARCHAR2(50);
+
+        UPDATE ORDERS o SET BOOKNAME = (SELECT BOOKNAME FROM BOOK b WHERE b.BOOKID = o.BOOKID);
+
+        ORDERS 테이블의 BOOKNAME 컬럼 삭제
+            ALTER TABLE ORDERS DROP COLUMN BOOKNAME;
+
+    < 인라인 뷰 >
+        서브쿼리가 FROM 절에 오는 경우를 말함
+        실제로 존재하지 않는 SELECT 한 결과를 가상의 테이블
+
+    연습) 판매수량이 가장 높은 상위 3개의 도서의 정보를 출력
+        - 판매에 대한 정보는 ORDERS 테이블에 있으니 ORDERS 테이블로 부터 도서번호별로 판매수량을 구하기
+            SELECT BOOKID, COUNT(*) FROM ORDERS
+            GROUP BY BOOKID
+            ORDER BY COUNT(*) DESC;
+
+            위의 결과를 서브쿼리로하여 행번호 붙임
+            SELECT a.BOOKID
+            FROM(SELECT BOOKID, COUNT(*) FROM ORDERS
+                             GROUP BY BOOKID
+                             ORDER BY COUNT(*) DESC) a
+            WHERE ROWNUM <= 3;
+
+            도서번호에 해당하는 도서번호를 출력
+            SELECT * FROM BOOK
+            WHERE BOOKID IN (SELECT a.BOOKID FROM (SELECT BOOKID, COUNT(*) FROM ORDERS
+                                        GROUP BY
+
+    연습) 급여가 가장 낮은 5명의 직원에게 특별상여금을 지급하려고 함
+            대상자의 사원번호, 사원명, 상여금을 출력 상여금은 급여의 100%
+
+        SELECT ROWNUM, ENO, ENAME, SALARY
+        FROM(
+            SELECT ENO, ENAME, SALARY FROM EMP ORDER BY SALARY
+        )
+        WHERE ROWNUM <= 5;
+
+   연습) 오늘날짜에 가장 많이 판매된 도서의 2권의 정보를 출력
+    - 오늘 날짜에 판매내역을 조회
+        SELECT * FROM ORDERS
+        WHERE ORDERDATE = SYSDATE;  <- 안됨
+
+        SYSDATE 으로 레코드를 추가하게 되면 년,월,일,시,분,초에 대한 정보가 함께 추가됨
+        SELECT * FROM ORDERS
+        WHERE TO_CHAR(ORDERDATE, 'YY/MM/DD') = TO_CHAR(SYSDATE, 'YY/MM/DD');
+
+        - 판매건수 포함하여 출력
+        SELECT BOOKID, COUNT(*) CNT FROM ORDERS
+        WHERE TO_CHAR(ORDERDATE, 'YY/MM/DD') = TO_CHAR(SYSDATE, 'YY/MM/DD')
+        GROUP BY BOOKID
+        ORDER BY CNT DESC;
+
+        행번호를 붙여서 행번호가 2이하인 것에 해당하는 도서번호 출력
+        SELECT BOOKID
+        FROM
+        (
+            SELECT BOOKID, COUNT(*) CNT FROM ORDERS
+            WHERE TO_CHAR(ORDERDATE, 'YY/MM/DD') = TO_CHAR(SYSDATE, 'YY/MM/DD')
+            GROUP BY BOOKID
+            ORDER BY CNT DESC
+        )
+        WHERE ROWNUM <= 2;
+
+        BOOK 테이블로 부터 도서번호가 B에 해당하는 도서의 정보를 출력
+        SELECT * FROM BOOK
+        WHERE BOOKID IN
+        (
+            SELECT BOOKID
+            FROM
+            (
+                SELECT BOOKID, COUNT(*) CNT FROM ORDERS
+                WHERE TO_CHAR(ORDERDATE, 'YY/MM/DD') = TO_CHAR(SYSDATE, 'YY/MM/DD')
+                GROUP BY BOOKID
+                ORDER BY CNT DESC
+            )
+            WHERE ROWNUM <= 2
+        );
+
+    << 중첩 쿼리 >>
+        서브쿼리가 WHERE 절에 오는 경우를 말함
+
+        이때에는 서브쿼리의 건수가 단일행인지 아닌지에 따라
+            단일행연산자, 다중행연산자를 구분하여 사용해야 함
+
+        =, >, <, >=, <= 연산자는 단일행연산자 이며
+            서브쿼리의 건수가 한건(단일행)일때에 사용할 수 있음
+
+        SELECT ~
+        FROM ~
+        WHERE 컬럼 > (SELECT ~)
+
+        서브쿼리의 건수가 여러건(다중행)일 때에는 '=' 대신에 IN 을 써야 함
+
+        >, <, >=, <=는 ANY(SOME), ALL과 같이 사용해야 함
+            또, 서브쿼리
+
+    << 다중행연산자 >>
+        서브쿼리의 건수가 여러건일때에 사용하는 연산자를 말하여
+            IN, ANY(SOME), ALL, EXIST등이 있습니다.
+
+    연습) 평균주문금액
+        SELECT AVG(SALEPRICE) FROM ORDERS;
+
+    연습) 평균주문금액 이하의 주문에 대하여 주문번호, 주문금액을 출력
+        SELECT ORDERID, SALEPRICE
+        FROM ORDERS
+        WHERE SALEPRICE <= (SELECT AVG(SALEPRICE) FROM ORDERS);
+
+    연습) 대한민국에 거주하는 고객의 아이디를 출력
+        SELECT CUSTID FROM CUSTOMER
+        WHERE ADDRESS LIKE '대한민국%';
+
+    연습) 대한민국에 거주하는 고객의 총주문금액을 출력
+        SELECT SUM(SALEPRICE)
+        FROM ORDERS
+        WHERE CUSTID = (SELECT CUSTID FROM CUSTOMER
+            WHERE ADDRESS LIKE('대한민국%'));
+        => 서브쿼리의 건수가 여러건일 때에 단일행 연산자인 = 를 사용할 수 없고 IN 을 사용해야 함
+        ORA-01427: 단일 행 하위 질의에 2개 이상의 행이 리턴되었습니다.
+
+        SELECT SUM(SALEPRICE)
+                FROM ORDERS
+                WHERE CUSTID IN (SELECT CUSTID FROM CUSTOMER
+                    WHERE ADDRESS LIKE('대한민국%'));
+
+    연습) 4번 고객이 주문한 모든 주문 금액보다 더 비싼 도서를 구입한 주문의 주문번호와 금액을 출력
+
+        SELECT ORDERID, SALEPRICE
+        FROM ORDERS
+        WHERE SALEPRICE > ALL(SELECT SALEPRICE FROM ORDERS WHERE CUSTID = 4);
+
+        SELECT ORDERID, SALEPRICE
+        FROM ORDERS
+        WHERE SALEPRICE > (SELECT MAX(SALEPRICE) FROM ORDERS WHERE CUSTID = 4);
+
+    SELECT CUSTID, BOOKID FROM ORDERS ORDER BY CUSTID, BOOKID;
+
+    '박지성'에게 어떤 도서를 추천 해 주면 좋을까요?
+    - '박지성' 이 구매한 도서와 동일한 도서를 가장 많이 구매한 고객번호 2명을 출력
+
+    1. '박지성'이 구매한 도서번호를 출력
+        SELECT BOOKID FROM ORDERS WHERE CUSTID=(SELECT CUSTID FROM CUSTOMER WHERE NAME = '박지성');
+        BOOKID        14        15         1         3         2         4
+
+    2. 고객번호별로 위의 도서를 구매한 건수를 출력
+        SELECT CUSTID, COUNT(CUSTID)
+        FROM ORDERS
+        WHERE BOOKID IN (SELECT BOOKID FROM ORDERS WHERE CUSTID = (
+            SELECT CUSTID FROM CUSTOMER WHERE NAME = '박지성'))
+        AND CUSTID<>
+        (SELECT CUSTID FROM CUSTOMER WHERE NAME = '박지성')
+        GROUP BY CUSTID ORDER BY COUNT(CUSTID) DESC;
+
+            CUSTID COUNT(CUSTID)
+            ------ -------------
+                 2             7
+                 3             3
+                 5             2
+        - 위의 결과에 행번호를 붙여서 상위 2개의 고객번호를 출력
+        select custid
+        from ()
+        where rownum <= 2;
+
+        select custid
+        from (select custid,count(custid)
+        from orders
+        where bookid in (select bookid from
+        orders where custid = (select custid from customer
+        						where name = '박지성'))
+        and custid <>
+        (select custid from customer where name = '박지성')
+        group by custid
+        order by count(custid) desc)
+        where rownum <= 2;
+            CUSTID
+            ------
+                 2
+                 3
+        - 위의 고객들이 주문한 도서번호를 출력
+
+        select bookid
+        from orders
+        where custid in ();
+
+        select distinct bookid
+        from orders
+        where custid in (select custid
+        from (select custid,count(custid)
+        from orders
+        where bookid in (select bookid from
+        orders where custid = (select custid from customer
+        						where name = '박지성'))
+        and custid <>
+        (select custid from customer where name = '박지성')
+        group by custid
+        order by count(custid) desc)
+        where rownum <= 2);
+
+        BOOKID  14  15  1   2   3   5   6   10  8
+        - 위의 결과에서 박지성이 구매한 도서목록를 빼 줍니다.
+        ()
+        minus
+        ()
+
+        (select distinct bookid
+        from orders
+        where custid in (select custid
+        from (select custid,count(custid)
+        from orders
+        where bookid in (select bookid from
+        orders where custid = (select custid from customer
+        						where name = '박지성'))
+        and custid <>
+        (select custid from customer where name = '박지성')
+        group by custid
+        order by count(custid) desc)
+        where rownum <= 2))
+        minus
+        (select bookid from
+        orders where custid = (select custid from customer
+        						where name = '박지성'));
+
+        ==> 도서번호가 위의 결과에 해당하는 도서정보를 출력
+        select * from
+        book
+        where bookid in ();
+
+        // 추천책--------------------------------------------------------------------------------------
+        select * from
+        book
+        where bookid in ((select distinct bookid
+        from orders
+        where custid in (select custid
+        from (select custid,count(custid)
+        from orders
+        where bookid in (select bookid from
+        orders where custid = (select custid from customer
+        						where name = '박지성'))
+        and custid <>
+        (select custid from customer where name = '박지성')
+        group by custid
+        order by count(custid) desc)
+        where rownum <= 2))
+        minus
+        (select bookid from
+        orders where custid = (select custid from customer
+        						where name = '박지성')));
+
+        BOOKID BOOKNAME                PRICE PUBLISHER
+        ------ -------------------- -------- --------------------
+             5 피겨 교본               8,000 굿스포츠
+             6 역도 단계별 기술        6,000 굿스포츠
+             8 야구를 부탁해          13,000 이상미디어
+            10 Olympic Champion       13,000 Pearson
+-------------------------------------------------------------------------------------------------
+        select * from
+        book
+        where bookid in ((select distinct bookid
+        from orders
+        where custid in (select custid
+        from (select custid,count(custid)
+        from orders
+        where bookid in (select bookid from
+        orders where custid = (select custid from customer
+        						where name = '임유나'))
+        and custid <>
+        (select custid from customer where name = '임유나')
+        group by custid
+        order by count(custid) desc)
+        where rownum <= 2))
+        minus
+        (select bookid from
+        orders where custid = (select custid from customer
+        						where name = '임유나')));
+
+        선택된 레코드가 없습니다.
+        ==> 구매이력이 없는 사람은 추천도서가 없어요!
+
+        숙제) 다음을 참조하여  구매이력이 없는 사람에게도 추천이 되도록 sql을 작성 해 봅니다.
+        ()	<-- 나와 성향이 유사한 고객이 구매한 도서목록 - 내가구매한 도서목록
+        union
+        ()	<-- 가장 잘팔리는 도서 2권
